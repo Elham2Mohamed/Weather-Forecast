@@ -27,9 +27,11 @@ class DailyAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val current: WeatherEntry = getItem(position)
+        val dtTxt = current.dt_txt
+        val parts = dtTxt.split(" ")
         // Picasso.get().load(current.thumbnailUrl).into(holder.productImage)
         holder.tvDegree.text = current.wind.deg.toString()+"°C"
-        holder.tvDate.text = current.dt_txt
+        holder.tvDate.text = parts[0]
         holder.tvDesc.text=current.weather[0].description
     }
 
