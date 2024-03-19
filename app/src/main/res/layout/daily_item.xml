@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         app:cardCornerRadius="40dp"
-        android:backgroundTint="@color/purple_500"
+        android:backgroundTint="?attr/colorPrimary"
         app:cardElevation="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -20,16 +20,17 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints">
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/icon"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_alignParentLeft="true"
+        <ImageView   android:id="@+id/icon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_gravity="top|end"
             android:layout_marginStart="5dp"
             android:elevation="1dp"
-            android:paddingBottom="15dp"
+            android:paddingBottom="10dp"
             android:scaleType="centerCrop"
             android:src="@drawable/cloudy"
             app:layout_constraintEnd_toEndOf="parent"
@@ -37,8 +38,8 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="80dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="35dp"
             android:background="@drawable/design"
             android:padding="16dp">
 
@@ -49,7 +50,7 @@
                 android:paddingEnd="70dp"
                 android:text=" 25°C "
                 android:textColor="@color/white"
-                android:textSize="50sp"
+                android:textSize="35sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -63,7 +64,6 @@
                 android:text="Montreal, Canada"
                 android:textColor="@color/white"
                 android:textSize="18sp"
-
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tvDegree"
@@ -73,14 +73,13 @@
                 android:id="@+id/tvDesc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
+                android:layout_marginBottom="10dp"
                 android:gravity="end"
                 android:text="Showers"
                 android:textColor="@color/white"
                 android:textSize="25sp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                />
+                app:layout_constraintEnd_toEndOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

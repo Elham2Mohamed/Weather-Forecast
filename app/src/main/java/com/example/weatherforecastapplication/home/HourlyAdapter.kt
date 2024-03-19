@@ -1,5 +1,6 @@
 package com.example.weatherforecastapplication.home
 
+import android.annotation.SuppressLint
 import android.media.Rating
 import android.view.LayoutInflater
 import android.view.View
@@ -16,7 +17,8 @@ import com.example.weatherforecastapplication.model.WeatherEntry
 import com.squareup.picasso.Picasso
 
 class HourlyAdapter(
-    private val onItemClick: (WeatherEntry) -> Unit
+    private val context:HomeFragment
+   // private val onItemClick: (WeatherEntry) -> Unit
 ) : ListAdapter<WeatherEntry, HourlyAdapter.ViewHolder>(WeatherDiffutil()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -25,18 +27,50 @@ class HourlyAdapter(
         return ViewHolder(view)
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val current: WeatherEntry = getItem(position)
-       // Picasso.get().load(current.thumbnailUrl).into(holder.productImage)
-        val dtTxt = current.dt_txt
+        val icon=context.getImage(current.weather[0].icon)
+        holder.icon.setImageResource(icon)
+         val dtTxt = current.dt_txt
         val parts = dtTxt.split(" ")
          val part = parts[1].split(":")
-        holder.tvDegree.text = current.wind.deg.toString()+"°C"
         if(part[0].compareTo("12")>0)
-        holder.tvDate.text = part[0]+" PM"
+        holder.tvDate.text = part[0]+":00 PM"
         else
-            holder.tvDate.text = part[0]+" AM"
+            holder.tvDate.text = part[0]+":00 AM"
+        when {
+            context.speed == "meter/sec" && context.temp == "Fahrenheit" -> {
+                holder.tvDegree.text =
+                    context.celsiusToFahrenheit(current.main.temp).toString() + "°F"
 
+            }
+
+            context.speed == "miles/hour" && context.temp == "Celsius" -> {
+                holder.tvDegree.text =
+                    context.fahrenheitToCelsius(current.main.temp).toString() + "°C"
+
+            }
+
+            context.speed == "miles/hour" && context.temp == "Kelvin" -> {
+                holder.tvDegree.text = current.main.temp.toString() + "°K"
+
+            }
+
+            context.speed == "miles/hour" && context.temp == "Fahrenheit" -> {
+                holder.tvDegree.text = current.main.temp.toString() + "°F"
+
+            }
+
+            (context.speed == "meter/sec" && context.temp == "Celsius") -> {
+                holder.tvDegree.text = current.main.temp.toString() + "°C"
+
+            }
+
+            else -> {
+                holder.tvDegree.text = current.main.temp.toString() + "°K"
+            }
+        }
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

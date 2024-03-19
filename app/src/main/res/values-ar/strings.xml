@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">الطقس</string>
+    <string name="title_home">الصفحه الرئيسيه</string>
+    <string name="title_favorite">الصفحه المفضله</string>
+    <string name="title_alerts">التنبيهات</string>
+    <string name="title_settings">الاعدادات</string>
+    <string name="location">الموقع</string>
+    <string name="languages">اللغه</string>
+    <string name="gps">موقعي الحالي</string>
+    <string name="map">الخريطة</string>
+    <string name="english">الانجليزية</string>
+    <string name="arabic">العربية</string>
+    <string name="wind_speed">سرعة الرياح</string>
+    <string name="meter_sec">متر/الثانيه</string>
+    <string name="miles_hour">ميل/ساعة</string>
+    <string name="kelvin">كلفين</string>
+    <string name="celsius">سيليزيس</string>
+    <string name="fahrenheit">فيهرنهايت</string>
+    <string name="enable">تفعيل</string>
+    <string name="temperature">الحرارة</string>
+    <string name="notifications">الاشعارات</string>
+    <string name="disable">الغاء</string>
+    <string name="visibility">الرؤية</string>
+    <string name="temperaturee">درجة الحرارة</string>
+    <string name="wind">الرياح</string>
+    <string name="perssure">الضغط</string>
+    <string name="humidity">الرطوبة</string>
+    <string name="cloud">السحب</string>
+    <string name="google_maps_api_key">AIzaSyBnwre378pcYLgQTK8EWBljfgvT_tzDHIo</string>
+</resources>

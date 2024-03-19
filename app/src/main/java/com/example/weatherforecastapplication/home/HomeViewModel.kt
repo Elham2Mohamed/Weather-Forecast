@@ -1,5 +1,6 @@
 package com.example.weatherforecastapplication.home
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.LiveData
@@ -27,10 +28,11 @@ class HomeViewModel(private val repository: WeatherRepository) : ViewModel() {
         Log.i("TAG", "Exception HomeViewModel : $exception")
     }
 
-    fun getCurrentWeather(lat: Double, lon: Double, apiKey: String) {
+    @SuppressLint("SuspiciousIndentation")
+    fun getCurrentWeather(lat: Double, lon: Double, lang:String, units :String, apiKey: String) {
         viewModelScope.launch(Dispatchers.IO) {
 
-        val weather = repository.getCurrentWeather(lat, lon, apiKey)
+        val weather = repository.getCurrentWeather(lat, lon,lang,units , apiKey)
            weather.catch { e ->
                 withContext(Dispatchers.Main) {
                     _currentWeather.value = ApiState.Failure(e)
@@ -41,6 +43,24 @@ class HomeViewModel(private val repository: WeatherRepository) : ViewModel() {
                     _currentWeather.value = ApiState.Success(it)
                 }
             }
+
+        }
+    }
+
+    fun getCurrentWeather(lat: Double, lon: Double, lang:String, apiKey: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+
+            val weather = repository.getCurrentWeather(lat, lon,lang , apiKey)
+            weather.catch { e ->
+                withContext(Dispatchers.Main) {
+                    _currentWeather.value = ApiState.Failure(e)
+                }
+            }
+                .collect {
+                    withContext(Dispatchers.Main) {
+                        _currentWeather.value = ApiState.Success(it)
+                    }
+                }
 
         }
     }
