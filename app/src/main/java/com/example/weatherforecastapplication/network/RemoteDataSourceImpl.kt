@@ -14,7 +14,7 @@ class RemoteDataSourceImpl : RemoteDataSource {
                 val weatherData = RetrofitHelper.weatherService.getCurrentWeather(lat, lon,lang,units, apiKey)
                 emit(weatherData)
             } catch (e: Exception) {
-                emit(WeatherData(" ",0,0, emptyList<WeatherEntry>(),null)) // You need to provide a default value or handle the error accordingly
+                emit(WeatherData(0," ",0,0, emptyList<WeatherEntry>(),null)) // You need to provide a default value or handle the error accordingly
             }
         }
     }
@@ -24,7 +24,7 @@ class RemoteDataSourceImpl : RemoteDataSource {
                 val weatherData = RetrofitHelper.weatherService.getCurrentWeatherWithoutUints(lat, lon,lang,apiKey)
                 emit(weatherData)
             } catch (e: Exception) {
-                emit(WeatherData(" ",0,0, emptyList<WeatherEntry>(),null)) // You need to provide a default value or handle the error accordingly
+                emit(WeatherData(0," ",0,0, emptyList<WeatherEntry>(),null)) // You need to provide a default value or handle the error accordingly
             }
         }
     }

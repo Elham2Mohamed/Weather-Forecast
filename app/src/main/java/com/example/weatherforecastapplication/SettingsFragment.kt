@@ -37,11 +37,7 @@ class SettingsFragment : Fragment() {
         val rgTemperature = view.findViewById<RadioGroup>(R.id.rgTemperature)
         val rgSpeed = view.findViewById<RadioGroup>(R.id.rgSpeed)
         val rgNotifications = view.findViewById<RadioGroup>(R.id.rgNotifications)
-        val rBtnArabic = view.findViewById<RadioButton>(R.id.rBtnLanguages)
-        val rBtnMetric = view.findViewById<RadioButton>(R.id.rBtnSpeed)
 
-       // rBtnArabic.isChecked = true
-        //rBtnMetric.isChecked = true
         rgLanguages.setOnCheckedChangeListener { _, checkedId ->
             editor.putInt(Languages, checkedId)
             editor.apply()
@@ -51,11 +47,10 @@ class SettingsFragment : Fragment() {
             editor.putInt(Location, checkedId)
             editor.apply()
             if (checkedId == R.id.rBtn2Location) {
-                   activity?.supportFragmentManager?.beginTransaction()?.apply {
-                    replace(R.id.nav_host_fragment_activity_main, MAPFragment())
-                    addToBackStack(null)
-                       commit()
-                }
+                val intent=Intent(context,MapActivity::class.java)
+                    .putExtra("id","map")
+                startActivity(intent)
+
             }
         }
 

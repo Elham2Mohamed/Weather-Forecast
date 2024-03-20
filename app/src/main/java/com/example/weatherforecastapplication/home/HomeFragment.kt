@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapplication.R
 import com.example.weatherforecastapplication.databinding.FragmentHomeBinding
+import com.example.weatherforecastapplication.db.WeatherLocalDataSource
 import com.example.weatherforecastapplication.model.RemoteDataSourceImpl
 import com.example.weatherforecastapplication.model.WeatherData
 import com.example.weatherforecastapplication.model.WeatherEntry
@@ -167,7 +168,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupViewModel() {
-        val repository = WeatherRepositoryImp.getInstance(RemoteDataSourceImpl())
+        val repository = WeatherRepositoryImp.getInstance(RemoteDataSourceImpl(),WeatherLocalDataSource(requireContext()))
         val viewModelFactory = HomeViewModelFactory(repository)
         viewModel = ViewModelProvider(this, viewModelFactory).get(HomeViewModel::class.java)
 
@@ -190,12 +191,7 @@ class HomeFragment : Fragment() {
     private fun handleWeather(weatherData: WeatherData, image: String) {
         val icon = getImage(image)
         icons.setImageResource(icon)
-//        lifecycleScope.launch {
-//            val bitmap = download(image)
-//            Log.i("TAG", "handleWeather: image $image")
-//            icons.setImageBitmap(bitmap)
-//            //Picasso.get().load(bitmap.toString()).into(icons)
-//        }
+
         getHourlyWeather()
         getDailyWeather()
         tvcity.text = weatherData.city?.name ?: "cairo"
@@ -372,7 +368,6 @@ class HomeFragment : Fragment() {
     }
 
     private fun enableLocationServices() {
-        Log.i("TAG", "enableLocationServices: Turn on location ")
         val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
         startActivity(intent)
 
@@ -529,15 +524,7 @@ class HomeFragment : Fragment() {
         return String.format("%.2f", result).toDouble()
     }
 
-    private suspend fun download(url: String): Bitmap? = withContext(Dispatchers.Default) {
-        var bitmap: Bitmap? = null
-        try {
-            bitmap = Picasso.get().load(url).get()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        bitmap
-    }
+
 
     fun getImage(image: String): Int {
         when (image) {
@@ -557,10 +544,4 @@ class HomeFragment : Fragment() {
         return R.drawable.cloudy
     }
 
-    fun onLocationSelected(latLng: LatLng) {
-        Log.i(
-            "TAG",
-            "onLocationSelected:latitude=  ${latLng.latitude} , longitude= ${latLng.longitude}"
-        )
-    }
 }

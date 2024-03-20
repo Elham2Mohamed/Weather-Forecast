@@ -1,15 +1,19 @@
 package com.example.weatherforecastapplication.model
 
+import com.example.weatherforecastapplication.db.IWeatherLocalDataSource
 import kotlinx.coroutines.flow.Flow
 
-class WeatherRepositoryImp(private val remoteDataSource: RemoteDataSourceImpl):WeatherRepository {
+class WeatherRepositoryImp(private val remoteDataSource: RemoteDataSourceImpl,
+                           private var localDataSource: IWeatherLocalDataSource
+):WeatherRepository {
 
     companion object{
         private var instance:WeatherRepositoryImp?=null
-        fun getInstance(remoteDataSourceImpl: RemoteDataSourceImpl):WeatherRepositoryImp {
+        fun getInstance(remoteDataSourceImpl: RemoteDataSourceImpl,
+                        localDataSource: IWeatherLocalDataSource):WeatherRepositoryImp {
 
             return instance?: synchronized(this){
-                val temp =WeatherRepositoryImp(remoteDataSourceImpl)
+                val temp =WeatherRepositoryImp(remoteDataSourceImpl,localDataSource)
                 instance=temp
                 temp
             }
@@ -21,5 +25,17 @@ class WeatherRepositoryImp(private val remoteDataSource: RemoteDataSourceImpl):W
     }
     override suspend fun getCurrentWeather(lat: Double, lon: Double,lang:String, apiKey: String): Flow<WeatherData> {
         return remoteDataSource.getCurrentWeather(lat, lon,lang, apiKey)
+    }
+
+    override suspend fun getFAVWeathers(): Flow<List<WeatherData>> {
+        return localDataSource.getAllWeathers()
+    }
+
+    override suspend fun insertWeather(weatherData: WeatherData) {
+        return localDataSource.insertWeather(weatherData)
+    }
+
+    override suspend fun deleteWeather(weatherData: WeatherData) {
+       return localDataSource.deleteWeather(weatherData)
     }
 }

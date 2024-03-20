@@ -1,6 +1,7 @@
 package com.example.weatherforecastapplication
 
 import android.content.Context
+import android.content.Intent
 import android.location.Address
 import android.location.Geocoder
 import android.os.Bundle
@@ -12,7 +13,13 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import com.example.mymvvmapplication.favproduct.viewmodel.FAVWeatherViewModel
+import com.example.mymvvmapplication.favproduct.viewmodel.FAVWeatherViewModelFactory
+import com.example.weatherforecastapplication.db.WeatherLocalDataSource
 import com.example.weatherforecastapplication.home.HomeFragment
+import com.example.weatherforecastapplication.model.RemoteDataSourceImpl
+import com.example.weatherforecastapplication.model.WeatherRepositoryImp
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -31,7 +38,7 @@ class MAPFragment : Fragment(), OnMapReadyCallback {
     private lateinit var tvSearch: EditText
     private lateinit var placesClient: PlacesClient
     private var selectedLatLng: LatLng? = null
-
+    lateinit var id:String
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -41,6 +48,8 @@ class MAPFragment : Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+         id = arguments?.getString("id").toString()
 
         val apiKey = getString(R.string.google_maps_api_key)
         Places.initialize(requireContext(), apiKey)
@@ -79,21 +88,18 @@ class MAPFragment : Fragment(), OnMapReadyCallback {
         gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 5f))
     }
 
-    private fun navigateToHomeFragment(selectedLatLng: LatLng) {
-        val args = Bundle().apply {
-            putParcelable("selectedLatLng", selectedLatLng)
-        }
 
-        val homeFragment = HomeFragment().apply {
-            arguments = args
+private fun navigateToHomeFragment(selectedLatLng: LatLng) {
+
+        val intent = Intent(requireContext(), MainActivity::class.java).apply {
+            putExtra("selectedLatLng", selectedLatLng)
+            putExtra("id",id)
         }
-        activity?.supportFragmentManager?.beginTransaction()?.remove(this@MAPFragment)?.commit()
-        activity?.supportFragmentManager?.beginTransaction()?.apply {
-            replace(R.id.nav_host_fragment_activity_main, homeFragment)
-            addToBackStack(null)
-            commit()
-        }
-    }
+        startActivity(intent)
+
+    activity?.finish()
+}
+
 
     private fun updateMapMarker(addressStr: String) {
         val location = getLocationFromAddress(requireContext(), addressStr)
