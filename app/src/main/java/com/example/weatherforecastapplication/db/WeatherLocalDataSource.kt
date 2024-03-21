@@ -21,4 +21,8 @@ class WeatherLocalDataSource(context: Context) :IWeatherLocalDataSource{
     override suspend fun getAllWeathers(): Flow<List<WeatherData>> {
         return dao.getAllWeathers()
     }
+    override suspend fun getWeatherById(id: Long): WeatherData? {
+        return dao.getWeatherById(id)
+    }
+
 }

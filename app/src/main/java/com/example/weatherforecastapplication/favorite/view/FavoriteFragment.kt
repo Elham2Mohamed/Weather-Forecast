@@ -90,6 +90,7 @@ lateinit var btnAdd: FloatingActionButton
                 when (result) {
                     is ApiState.Success -> {
                        viewModel.insertWeather(result.data)
+                        //viewModel.addNewFavoriteItem(result.data)
                     }
 
                     else -> {
@@ -124,11 +125,11 @@ lateinit var btnAdd: FloatingActionButton
         favRecyclerView.adapter = favAdapter
 
 
-        viewModel.weathres.observe(viewLifecycleOwner) {
-            favAdapter.submitList(it)
-            Log.i("TAG", "onViewCreated: list Size =  ${it.size}")
+        viewModel.weathres.observe(viewLifecycleOwner) { weatherList ->
+            val filteredList = weatherList.filter { it.id.toInt() != 1 }
+            val updatedList = filteredList + viewModel.newFavoriteItems
+            favAdapter.submitList(updatedList)
         }
-
          btnAdd=view.findViewById(R.id.btnAddLoction)
          btnAdd.setOnClickListener{
             val intent= Intent(context, MapActivity::class.java)

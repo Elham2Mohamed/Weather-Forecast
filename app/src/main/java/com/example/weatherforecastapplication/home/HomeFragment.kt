@@ -29,6 +29,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.mymvvmapplication.favproduct.viewmodel.FAVWeatherViewModel
+import com.example.mymvvmapplication.favproduct.viewmodel.FAVWeatherViewModelFactory
 import com.example.weatherforecastapplication.R
 import com.example.weatherforecastapplication.databinding.FragmentHomeBinding
 import com.example.weatherforecastapplication.db.WeatherLocalDataSource
@@ -57,6 +59,8 @@ const val REQUEST_LOCATION_CODE = 2005
 
 class HomeFragment : Fragment() {
     lateinit var image: String
+    private lateinit var favFactory: FAVWeatherViewModelFactory
+    private lateinit var fviewModel: FAVWeatherViewModel
     lateinit var sharedPreferences: SharedPreferences
     private lateinit var loader_view: ProgressBar
     private lateinit var tvcity: TextView
@@ -83,6 +87,7 @@ class HomeFragment : Fragment() {
     lateinit var language: String
     lateinit var speed: String
     lateinit var temp: String
+    var isFirst=false
 //lateinit var args
 
     private val binding get() = _binding!!
@@ -104,6 +109,7 @@ class HomeFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         setupViews()
         setupViewModel()
         setupAdapters()
@@ -122,8 +128,17 @@ class HomeFragment : Fragment() {
                         recyclerView1.visibility = View.VISIBLE
                         recyclerView2.visibility = View.VISIBLE
                         weatherData = result.data
+                        if(isFirst) {
+                            fviewModel.insertWeather(result.data)
+                            isFirst = false
+                        } else {
+                            val oldWeatherData = fviewModel.getWeatherById(1)
+                            oldWeatherData?.let {
+                                fviewModel.deleteProduct(it)
+                            }
+                            fviewModel.insertWeather(result.data.copy(id = 1))
+                        }
 
-                        // Log.i("TAG", "handleWeather: icone ${weatherData.list[0].weather[0].icon} ")
                         val image1 = (weatherData.list[0].weather[0].icon)
                         image = image1
                         handleWeather(weatherData, image1)
@@ -171,7 +186,14 @@ class HomeFragment : Fragment() {
         val repository = WeatherRepositoryImp.getInstance(RemoteDataSourceImpl(),WeatherLocalDataSource(requireContext()))
         val viewModelFactory = HomeViewModelFactory(repository)
         viewModel = ViewModelProvider(this, viewModelFactory).get(HomeViewModel::class.java)
+        favFactory = FAVWeatherViewModelFactory(
+            WeatherRepositoryImp.getInstance(
+                RemoteDataSourceImpl(),
+                WeatherLocalDataSource(requireContext())
+            )
+        )
 
+        fviewModel = ViewModelProvider(this, favFactory).get(FAVWeatherViewModel::class.java)
     }
 
     private fun setupAdapters() {

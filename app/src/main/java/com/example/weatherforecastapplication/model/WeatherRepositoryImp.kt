@@ -38,4 +38,7 @@ class WeatherRepositoryImp(private val remoteDataSource: RemoteDataSourceImpl,
     override suspend fun deleteWeather(weatherData: WeatherData) {
        return localDataSource.deleteWeather(weatherData)
     }
+    override suspend fun getWeatherById(id: Long): WeatherData? {
+        return localDataSource.getWeatherById(id)
+    }
 }

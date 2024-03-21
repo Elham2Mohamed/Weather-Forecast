@@ -3,10 +3,10 @@ package com.example.weatherforecastapplication.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "WeatherF")
+@Entity(tableName = "weather_t")
 data class WeatherData(
     @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+    val id: Long = 1,
     val cod: String,
     val message: Int,
     val cnt: Int,

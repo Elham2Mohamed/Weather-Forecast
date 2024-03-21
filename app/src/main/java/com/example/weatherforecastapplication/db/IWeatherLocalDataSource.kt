@@ -8,4 +8,5 @@ interface IWeatherLocalDataSource {
     suspend fun insertWeather(weatherData: WeatherData)
     suspend fun deleteWeather(weatherData: WeatherData)
     suspend fun getAllWeathers(): Flow<List<WeatherData>>
+    suspend fun getWeatherById(id: Long): WeatherData?
 }

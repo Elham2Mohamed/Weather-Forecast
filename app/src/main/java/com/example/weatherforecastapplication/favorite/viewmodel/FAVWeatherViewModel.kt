@@ -25,6 +25,11 @@ class FAVWeatherViewModel (private val repo :WeatherRepository):ViewModel() {
             }
             }
     }
+    val newFavoriteItems = mutableListOf<WeatherData>()
+
+//    fun addNewFavoriteItem(weatherData: WeatherData) {
+//        newFavoriteItems.add(weatherData)
+//    }
     fun deleteProduct(weather: WeatherData){
         viewModelScope.launch (Dispatchers.IO){
             repo.deleteWeather(weather)
@@ -35,6 +40,9 @@ class FAVWeatherViewModel (private val repo :WeatherRepository):ViewModel() {
         viewModelScope.launch (Dispatchers.IO){
             repo.insertWeather(weather)
         }
+    }
+    suspend fun getWeatherById(id: Long): WeatherData? {
+        return repo.getWeatherById(id)
     }
 
 

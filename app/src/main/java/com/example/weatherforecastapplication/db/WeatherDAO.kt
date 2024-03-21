@@ -10,8 +10,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WeatherDAO {
-    @Query("SELECT * FROM WeatherF")
+    @Query("SELECT * FROM weather_t")
      fun getAllWeathers(): Flow<List<WeatherData>>
+    @Query("SELECT * FROM weather_t WHERE id = :id")
+    suspend fun getWeatherById(id: Long): WeatherData?
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertWeather(weatherData: WeatherData):Long
