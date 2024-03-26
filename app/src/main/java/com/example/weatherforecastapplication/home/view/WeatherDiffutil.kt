@@ -1,4 +1,4 @@
-package com.example.weatherforecastapplication.home
+package com.example.weatherforecastapplication.home.view
 
 import android.annotation.SuppressLint
 import androidx.recyclerview.widget.DiffUtil

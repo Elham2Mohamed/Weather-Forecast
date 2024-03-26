@@ -9,4 +9,20 @@ interface WeatherRepository {
     suspend fun insertWeather(weatherData: WeatherData)
     suspend fun deleteWeather(weatherData: WeatherData)
     suspend fun getWeatherById(id: Long): WeatherData?
+    abstract fun setLanguage(lang: String)
+    abstract  fun setTemp(temp:String)
+    abstract  fun setUnit(unit:String)
+    abstract  fun setSpeed(speed:String)
+    abstract  fun setLocation(location:String)
+    abstract  fun setLongitude(lng:Double)
+    abstract  fun setLatitude(lat:Double)
+
+    abstract  fun getTemp():String
+
+    abstract  fun getLanguage():String
+    abstract  fun getUnit():String
+    abstract  fun getSpeed():String
+    abstract  fun getLocation():String
+    abstract  fun getLongitude():Double
+    abstract  fun getLatitude():Double
 }

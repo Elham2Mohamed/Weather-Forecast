@@ -1,19 +1,23 @@
 package com.example.weatherforecastapplication.model
 
 import com.example.weatherforecastapplication.db.IWeatherLocalDataSource
+import com.example.weatherforecastapplication.db.SettingsLocalDataSource
+import com.example.weatherforecastapplication.network.RemoteDataSource
 import kotlinx.coroutines.flow.Flow
 
-class WeatherRepositoryImp(private val remoteDataSource: RemoteDataSourceImpl,
-                           private var localDataSource: IWeatherLocalDataSource
+class WeatherRepositoryImp(private val remoteDataSource: RemoteDataSource,
+                           private var localDataSource: IWeatherLocalDataSource,
+                           private var settingsLocalDataSource: SettingsLocalDataSource
 ):WeatherRepository {
 
     companion object{
         private var instance:WeatherRepositoryImp?=null
-        fun getInstance(remoteDataSourceImpl: RemoteDataSourceImpl,
-                        localDataSource: IWeatherLocalDataSource):WeatherRepositoryImp {
+        fun getInstance(remoteDataSourceImpl: RemoteDataSource,
+                        localDataSource: IWeatherLocalDataSource,
+                        settingsLocalDataSource: SettingsLocalDataSource):WeatherRepositoryImp {
 
             return instance?: synchronized(this){
-                val temp =WeatherRepositoryImp(remoteDataSourceImpl,localDataSource)
+                val temp =WeatherRepositoryImp(remoteDataSourceImpl,localDataSource,settingsLocalDataSource)
                 instance=temp
                 temp
             }
@@ -41,4 +45,62 @@ class WeatherRepositoryImp(private val remoteDataSource: RemoteDataSourceImpl,
     override suspend fun getWeatherById(id: Long): WeatherData? {
         return localDataSource.getWeatherById(id)
     }
+
+    override fun setLanguage(lang: String) {
+        settingsLocalDataSource.setLanguage(lang)
+    }
+
+    override fun setTemp(temp: String) {
+       settingsLocalDataSource.setTemp(temp)
+    }
+
+    override fun setUnit(unit: String) {
+        settingsLocalDataSource.setUnit(unit)
+    }
+
+    override fun setSpeed(speed: String) {
+        settingsLocalDataSource.setSpeed(speed)
+    }
+
+    override fun setLocation(location: String) {
+        settingsLocalDataSource.setLocation(location)
+    }
+
+    override fun setLongitude(lng: Double) {
+        settingsLocalDataSource.setLongitude(lng)
+    }
+
+    override fun setLatitude(lat: Double) {
+        settingsLocalDataSource.setLatitude(lat)
+    }
+
+    override fun getTemp():String {
+        return settingsLocalDataSource.getTemp()
+    }
+
+    override fun getLanguage(): String {
+        return settingsLocalDataSource.getLanguage()
+    }
+
+    override fun getUnit(): String {
+        return settingsLocalDataSource.getUnit()
+    }
+
+    override fun getSpeed(): String {
+        return settingsLocalDataSource.getSpeed()
+    }
+
+    override fun getLocation(): String {
+        return settingsLocalDataSource.getLocation()
+    }
+
+    override fun getLongitude(): Double {
+        return settingsLocalDataSource.getLongitude()
+    }
+
+    override fun getLatitude(): Double {
+        return settingsLocalDataSource.getLatitude()
+    }
+
+
 }

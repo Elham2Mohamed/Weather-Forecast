@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
+    id("androidx.navigation.safeargs")
 }
 
 android {
@@ -43,6 +44,7 @@ dependencies {
 //Room
     implementation("androidx.room:room-ktx:2.6.1")
     implementation("androidx.room:room-runtime:2.6.1")
+    implementation("com.google.firebase:protolite-well-known-types:18.0.0")
     kapt("androidx.room:room-compiler:2.6.1")
 //ViewModel & livedata
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
@@ -62,8 +64,16 @@ dependencies {
 
  //map
     implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation ("joda-time:joda-time:2.10.12")
 
-    implementation ("com.google.android.libraries.places:places:3.3.0")
+    implementation ("androidx.navigation:navigation-fragment-ktx:2.7.7")
+    implementation ("androidx.navigation:navigation-ui-ktx:2.7.7")
+    implementation ("com.google.android.gms:play-services-maps:18.2.0")
+    implementation ("com.google.android.libraries.places:places:3.4.0")
+
+    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
+    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
+    implementation ("com.google.android.libraries.places:places:3.4.0")
     implementation ("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")

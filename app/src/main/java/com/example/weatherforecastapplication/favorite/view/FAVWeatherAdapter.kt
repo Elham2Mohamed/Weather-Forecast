@@ -11,7 +11,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapplication.R
 import com.example.weatherforecastapplication.model.WeatherData
 
-class FAVWeatherAdapter (private val onClickListener: FavOnClickListener,val context: FavoriteFragment
+class FAVWeatherAdapter(
+    private val onClickListener: FavOnClickListener, val context: FavoriteFragment
 ) : ListAdapter<WeatherData, FAVWeatherAdapter.ViewHolder>(WeatherDiffutil()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -25,33 +26,51 @@ class FAVWeatherAdapter (private val onClickListener: FavOnClickListener,val con
         val current: WeatherData = getItem(position)
         holder.desc.text = current.list[0].weather[0].description
         holder.city.text = current.city?.name ?: "Cairo"
-      holder.btnDelete.setOnClickListener { onClickListener.deleteItem(current) }
+        holder.btnDelete.setOnClickListener { onClickListener.deleteItem(current) }
         holder.itemView.setOnClickListener { onClickListener.onClickItem(current) }
         when {
-            context.speed == "meter/sec" && context.temp == "Fahrenheit" -> {
-                holder.degree.text =
-                    context.celsiusToFahrenheit(current.list[0].main.temp).toString() + "°F"
+            context.speed == "meter/sec" && context.temp == "fahrenheit" -> {
+                if (context.sViewModel.getTemp() != "fahrenheit")
+                    holder.degree.text =
+                        context.convertKelvinToFahrenheit(current.list[0].main.temp).toInt()
+                            .toString() + "°F"
+                else
+                    holder.degree.text = (current.list[0].main.temp).toInt().toString() + "°F"
+            }
+
+            context.speed == "miles/hour" && context.temp == "celsius" -> {
+                if (context.sViewModel.getTemp() != "celsius") {
+                    holder.degree.text =
+                        context.convertKelvinToCelsius(current.list[0].main.temp).toInt()
+                            .toString() + "°C"
+                } else
+                    holder.degree.text = (current.list[0].main.temp).toInt().toString() + "°C"
+
 
             }
 
-            context.speed == "miles/hour" && context.temp == "Celsius" -> {
-                holder.degree.text =
-                    context.fahrenheitToCelsius(current.list[0].main.temp).toString() + "°C"
-
-            }
-
-            context.speed == "miles/hour" && context.temp == "Kelvin" -> {
+            context.speed == "miles/hour" && context.temp == "kelvin" -> {
                 holder.degree.text = current.list[0].main.temp.toString() + "°K"
 
             }
 
-            context.speed == "miles/hour" && context.temp == "Fahrenheit" -> {
-                holder.degree.text = current.list[0].main.temp.toString() + "°F"
+            context.speed == "miles/hour" && context.temp == "fahrenheit" -> {
+                if (context.sViewModel.getTemp() != "fahrenheit") {
+                    holder.degree.text =
+                        context.convertKelvinToFahrenheit(current.list[0].main.temp).toInt()
+                            .toString() + "°F"
+                } else
+                    holder.degree.text = (current.list[0].main.temp).toInt().toString() + "°F"
 
             }
 
-            (context.speed == "meter/sec" && context.temp == "Celsius") -> {
-                holder.degree.text = current.list[0].main.temp.toString() + "°C"
+            (context.speed == "meter/sec" && context.temp == "celsius") -> {
+                if (context.sViewModel.getTemp() != "celsius")
+                    holder.degree.text =
+                        context.convertKelvinToCelsius(current.list[0].main.temp).toInt()
+                            .toString() + "°C"
+                else
+                    holder.degree.text = (current.list[0].main.temp).toInt().toString() + "°C"
 
             }
 
@@ -63,9 +82,9 @@ class FAVWeatherAdapter (private val onClickListener: FavOnClickListener,val con
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val degree: TextView = itemView.findViewById(R.id.tvDegree)
-       val city: TextView = itemView.findViewById(R.id.tvCity)
-        val  desc: TextView = itemView.findViewById(R.id.tvDesc)
-       val btnDelete: ImageButton =itemView.findViewById(R.id.btnDelete)
+        val city: TextView = itemView.findViewById(R.id.tvCity)
+        val desc: TextView = itemView.findViewById(R.id.tvDesc)
+        val btnDelete: ImageButton = itemView.findViewById(R.id.btnDelete)
 
     }
 

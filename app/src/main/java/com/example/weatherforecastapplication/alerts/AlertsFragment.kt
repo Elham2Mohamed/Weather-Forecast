@@ -1,15 +1,12 @@
 package com.example.weatherforecastapplication.alerts
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.example.weatherforecastapplication.MapActivity
+import androidx.navigation.fragment.findNavController
 import com.example.weatherforecastapplication.R
 import com.example.weatherforecastapplication.databinding.FragmentAlertsBinding
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -46,9 +43,10 @@ class AlertsFragment : Fragment() {
 
         btnAdd=view.findViewById(R.id.btnAddLoction)
         btnAdd.setOnClickListener{
-            val intent= Intent(context, MapActivity::class.java)
-                .putExtra("id","alert")
-            startActivity(intent)
+            val navController = findNavController()
+            val action =AlertsFragmentDirections.actionNavigationAlertsToNavigationMap()
+            action.id = 3
+            navController.navigate(action)
         }
     }
     override fun onDestroyView() {

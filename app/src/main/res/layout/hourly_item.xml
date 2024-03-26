@@ -31,7 +31,7 @@
             android:layout_gravity="center_horizontal"
             android:paddingBottom="8dp"
             android:paddingTop="12dp"
-            android:text="12 AM" />
+             />
         <ImageView
             android:id="@+id/icon"
             android:layout_width="30dp"
@@ -48,7 +48,7 @@
             android:paddingBottom="12dp"
             android:textColor="@color/white"
             android:layout_gravity="center_horizontal"
-            android:text="25°C" /></LinearLayout>
+             /></LinearLayout>
     </androidx.cardview.widget.CardView>
 
 

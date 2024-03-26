@@ -7,19 +7,17 @@ import android.location.Geocoder
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import com.example.mymvvmapplication.favproduct.viewmodel.FAVWeatherViewModel
-import com.example.mymvvmapplication.favproduct.viewmodel.FAVWeatherViewModelFactory
-import com.example.weatherforecastapplication.db.WeatherLocalDataSource
-import com.example.weatherforecastapplication.home.HomeFragment
-import com.example.weatherforecastapplication.model.RemoteDataSourceImpl
-import com.example.weatherforecastapplication.model.WeatherRepositoryImp
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import com.example.weatherforecastapplication.databinding.FragmentHomeBinding
+import com.example.weatherforecastapplication.favorite.view.FavoriteFragmentDirections
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -27,10 +25,12 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.AutocompleteSessionToken
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.libraries.places.api.net.PlacesClient
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.IOException
+import kotlin.math.log
 
 class MAPFragment : Fragment(), OnMapReadyCallback {
     private lateinit var gMap: GoogleMap
@@ -38,7 +38,8 @@ class MAPFragment : Fragment(), OnMapReadyCallback {
     private lateinit var tvSearch: EditText
     private lateinit var placesClient: PlacesClient
     private var selectedLatLng: LatLng? = null
-    lateinit var id:String
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -49,19 +50,22 @@ class MAPFragment : Fragment(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-         id = arguments?.getString("id").toString()
-
         val apiKey = getString(R.string.google_maps_api_key)
         Places.initialize(requireContext(), apiKey)
         placesClient = Places.createClient(requireContext())
         btnSave = view.findViewById(R.id.btnSave)
         tvSearch = view.findViewById(R.id.tvSearch)
 
-        btnSave.setOnClickListener {
-            selectedLatLng?.let { navigateToHomeFragment(it) }
+
+        btnSave.setOnClickListener {i->
+            selectedLatLng?.let {
+                Log.i("TAG", "onViewCreated: map (latitude= ${it.latitude},longitude= ${it.longitude})")
+                navigateToHomeFragment(it)
+            }
         }
 
-        val mapFragment = childFragmentManager.findFragmentById(R.id.mapFragment) as SupportMapFragment
+        val mapFragment =
+            childFragmentManager.findFragmentById(R.id.mapFragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
         tvSearch.addTextChangedListener(object : TextWatcher {
@@ -84,21 +88,50 @@ class MAPFragment : Fragment(), OnMapReadyCallback {
             gMap.moveCamera(CameraUpdateFactory.newLatLng(latLng))
             selectedLatLng = latLng
         }
-        val defaultLocation = LatLng(26.820553, 30.802498)
+        val defaultLocation = LatLng(30.0444196, 31.2357116)
         gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 5f))
     }
 
+    private fun navigateToHomeFragment(selectedLatLng: LatLng) {
 
-private fun navigateToHomeFragment(selectedLatLng: LatLng) {
+        if(selectedLatLng != null){
+            lifecycleScope.launch (Dispatchers.IO){
+                if(arguments?.getInt("id") == 1){
+                    withContext(Dispatchers.Main) {
+                        val navController = findNavController()
+                        val action = MAPFragmentDirections.actionNavigationMapToNavigationHome()
+                        action.lat =selectedLatLng.latitude.toString()
+                        action.log=selectedLatLng.longitude.toString()
+                        navController.navigate(action)
+                    }
+                }
+               else if(arguments?.getInt("id") == 2){
 
-        val intent = Intent(requireContext(), MainActivity::class.java).apply {
-            putExtra("selectedLatLng", selectedLatLng)
-            putExtra("id",id)
+                    withContext(Dispatchers.Main) {
+                        val navController = findNavController()
+                        val action = MAPFragmentDirections.actionNavigationMapToNavigationFavorite()
+                        action.lat =selectedLatLng.latitude.toString()
+                        action.log=selectedLatLng.longitude.toString()
+                        navController.navigate(action)
+                    }
+                }
+                else if(arguments?.getInt("id") == 3){
+
+                    withContext(Dispatchers.Main) {
+                        val navController = findNavController()
+                        val action = MAPFragmentDirections.actionNavigationMapToNavigationAlerts()
+                        action.lat =selectedLatLng.latitude.toString()
+                        action.log=selectedLatLng.longitude.toString()
+                        navController.navigate(action)
+                    }
+                }
+                else{
+                    Log.i("TAG", "Latlag = null")
+                }
+            }
+
         }
-        startActivity(intent)
-
-    activity?.finish()
-}
+    }
 
 
     private fun updateMapMarker(addressStr: String) {
