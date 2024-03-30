@@ -85,8 +85,8 @@ class WeatherRepositoryImp(
         settingsLocalDataSource.setTemp(temp)
     }
 
-    override fun setUnit(unit: String) {
-        settingsLocalDataSource.setUnit(unit)
+    override fun setDate(unit: String) {
+        settingsLocalDataSource.setDate(unit)
     }
 
     override fun setSpeed(speed: String) {
@@ -113,8 +113,8 @@ class WeatherRepositoryImp(
         return settingsLocalDataSource.getLanguage()
     }
 
-    override fun getUnit(): String {
-        return settingsLocalDataSource.getUnit()
+    override fun getDate(): String {
+        return settingsLocalDataSource.getDate()
     }
 
     override fun getSpeed(): String {

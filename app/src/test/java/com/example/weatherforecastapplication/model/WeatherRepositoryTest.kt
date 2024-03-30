@@ -18,9 +18,9 @@ class WeatherRepositoryTest{
     val weather3=WeatherData(2," ",0,0, emptyList(),null)
     val weather4=WeatherData(3," ",0,0, emptyList(),null)
 
-    val alert1=AlertWeather(0,"","",0.0,0.0)
-    val alert2=AlertWeather(1,"","",0.0,0.0)
-    val alert3=AlertWeather(2,"","",0.0,0.0)
+    val alert1=AlertWeather(0,"","",0.0,0.0,"")
+    val alert2=AlertWeather(1,"","",0.0,0.0,"")
+    val alert3=AlertWeather(2,"","",0.0,0.0,"")
 
     val weathers= listOf<WeatherData>(weather1,weather2,weather3)
     val alerts= listOf<AlertWeather>(alert1,alert2,alert3)

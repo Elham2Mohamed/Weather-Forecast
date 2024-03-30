@@ -36,8 +36,8 @@ class SettingsViewModel(private val repository: WeatherRepository) : ViewModel()
         repository.setNotificationAccess(access)
     }
 
-    fun setUnit(unit: String) {
-        repository.setUnit(unit)
+    fun setDate(date: String) {
+        repository.setDate(date)
     }
 
     fun setSpeed(speed: String) {
@@ -68,8 +68,8 @@ class SettingsViewModel(private val repository: WeatherRepository) : ViewModel()
         return repository.getLanguage()
     }
 
-    fun getUnit(): String {
-        return repository.getUnit()
+    fun getDate(): String {
+        return repository.getDate()
     }
 
     fun getSpeed(): String {

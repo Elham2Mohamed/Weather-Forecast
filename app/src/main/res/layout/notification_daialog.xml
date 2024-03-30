@@ -29,66 +29,69 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:layout_marginEnd="148dp"
-                android:text="@string/weather_forecast"
-                android:textColor="@color/black"
-                android:textSize="20sp"
+                android:layout_marginEnd="48dp"
+                android:text="@string/notification_access_required"
+                android:textColor="@color/white"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <!--            <Button-->
-<!--                android:id="@+id/btnOk"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_marginTop="8dp"-->
-<!--                android:layout_marginBottom="20dp"-->
-<!--                android:backgroundTint="?attr/colorSecondary"-->
-<!--                android:gravity="center"-->
-<!--                android:text="@string/ok"-->
-<!--                app:layout_constraintBottom_toBottomOf="parent"-->
-<!--                app:layout_constraintEnd_toEndOf="parent"-->
-<!--                app:layout_constraintStart_toStartOf="parent"-->
-<!--                app:layout_constraintTop_toBottomOf="@+id/icon" />-->
-
-
             <TextView
                 android:id="@+id/tvDesc"
-                android:layout_width="0dp"
-                android:layout_height="23dp"
-                android:textColor="@color/black"
-                android:textSize="20sp"
-                app:layout_constraintBottom_toTopOf="@+id/btnOk"
-                app:layout_constraintEnd_toStartOf="@+id/icon"
+                android:layout_width="315dp"
+                android:layout_height="63dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/to_receive_weather_alerts_please_enable_notification_access_for_this_app"
+                android:textColor="@color/white"
+                android:textSize="15sp"
+                app:layout_constraintBottom_toTopOf="@+id/btnCancel"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView"
-                app:layout_constraintVertical_bias="0.431" />
+                app:layout_constraintVertical_bias="0.0" />
 
             <Button
-                android:id="@+id/btnOk"
+                android:id="@+id/btnCancel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="20dp"
+                android:layout_marginStart="28dp"
+                android:layout_marginBottom="8dp"
                 android:backgroundTint="@color/primary_color_dark"
                 android:gravity="center"
-                android:text="@string/ok"
+                android:text="@string/cancel"
                 android:textColor="@color/white"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/icon"
-                app:layout_constraintVertical_bias="0.041" />
+                app:layout_constraintStart_toStartOf="parent" />
 
             <ImageView
                 android:id="@+id/icon"
-                android:layout_width="80dp"
-                android:layout_height="90dp"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginEnd="4dp"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/textView"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/cloudy" />
+                app:srcCompat="@drawable/warning" />
+
+            <Button
+                android:id="@+id/btnEnable"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="30dp"
+                android:backgroundTint="@color/primary_color_dark"
+                android:gravity="center"
+                android:text="@string/enable"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.757"
+                app:layout_constraintStart_toEndOf="@+id/btnCancel"
+                app:layout_constraintTop_toBottomOf="@+id/tvDesc"
+                app:layout_constraintVertical_bias="0.0" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

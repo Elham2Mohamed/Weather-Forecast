@@ -9,6 +9,7 @@ import com.example.weatherforecastapplication.model.RemoteDataSourceImpl
 import com.example.weatherforecastapplication.model.WeatherData
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
+import junit.framework.TestCase.assertNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runBlockingTest
@@ -52,5 +53,6 @@ class HomeViewModelTest {
 
         // Then
         assertNotNull(viewModel.currentWeather.value)
+
     }
 }

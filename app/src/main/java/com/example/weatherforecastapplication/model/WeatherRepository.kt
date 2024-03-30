@@ -15,7 +15,7 @@ interface WeatherRepository {
     suspend fun getWeatherById(id: Long): WeatherData?
     abstract fun setLanguage(lang: String)
     abstract  fun setTemp(temp:String)
-    abstract  fun setUnit(unit:String)
+    abstract  fun setDate(date:String)
     abstract  fun setSpeed(speed:String)
     abstract  fun setLocation(location:String)
     abstract  fun setLongitude(lng:Double)
@@ -24,7 +24,7 @@ interface WeatherRepository {
     abstract  fun getTemp():String
 
     abstract  fun getLanguage():String
-    abstract  fun getUnit():String
+    abstract  fun getDate():String
     abstract  fun getSpeed():String
     abstract  fun getLocation():String
     abstract  fun getLongitude():Double

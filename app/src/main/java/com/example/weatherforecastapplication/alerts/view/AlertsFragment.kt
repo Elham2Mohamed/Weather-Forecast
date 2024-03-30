@@ -27,6 +27,7 @@ import android.widget.Button
 import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -36,6 +37,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.impl.WorkManagerImpl
 import androidx.work.workDataOf
@@ -51,6 +53,7 @@ import com.example.weatherforecastapplication.favorite.view.FAVWeatherAdapter
 import com.example.weatherforecastapplication.model.AlertWeather
 import com.example.weatherforecastapplication.model.RemoteDataSourceImpl
 import com.example.weatherforecastapplication.model.WeatherRepositoryImp
+import com.example.weatherforecastapplication.settings.view.SettingsFragment
 import com.example.weatherforecastapplication.settings.viewModel.SettingsViewModel
 import com.example.weatherforecastapplication.settings.viewModel.SettingsViewModelFactory
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -60,12 +63,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import kotlin.math.log
 
-class AlertsFragment : Fragment(),AlertOnClickListener {
+class AlertsFragment : Fragment(), AlertOnClickListener {
 
     lateinit var btnAdd: FloatingActionButton
     lateinit var dialog: Dialog
-    lateinit var tvDate:TextView
+    lateinit var tvDate: TextView
     private var _binding: FragmentAlertsBinding? = null
     lateinit var factory: AlertWeatherViewModelFactory
     lateinit var viewModel: AlertsViewModel
@@ -90,9 +94,10 @@ class AlertsFragment : Fragment(),AlertOnClickListener {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    @SuppressLint("LogNotTimber")
+    @SuppressLint("LogNotTimber", "FragmentLiveDataObserve")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
 
         factory = AlertWeatherViewModelFactory(
             WeatherRepositoryImp.getInstance(
@@ -122,21 +127,21 @@ class AlertsFragment : Fragment(),AlertOnClickListener {
         dialog.setContentView(R.layout.alert_daialog)
         val rgNotification = dialog.findViewById<RadioGroup>(R.id.rgNotifications)
         val btnSave = dialog.findViewById<Button>(R.id.btnSave)
-        btnSave.visibility = View.GONE
+        //  btnSave.visibility = View.GONE
         val btnCancel = dialog.findViewById<Button>(R.id.btnCancel)
-        tvDate=dialog.findViewById<TextView>(R.id.tvDate)
+        tvDate = dialog.findViewById<TextView>(R.id.tvDate)
         btnAdd = view.findViewById(R.id.btnAddLoction)
 
         recyclerView = view.findViewById(R.id.list_item)
         adapter = AlertWeatherAdapter(this)
-        layoutManager = LinearLayoutManager(requireContext(),  RecyclerView.VERTICAL, false)
+        layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = adapter
 
 
-        var latitude =0.0
-        var longitude=0.0
-        var type="Alert"
+        var latitude = 0.0
+        var longitude = 0.0
+        var type = "Alert"
 
         viewModel.alerts.observe(viewLifecycleOwner) { weatherList ->
 
@@ -155,38 +160,42 @@ class AlertsFragment : Fragment(),AlertOnClickListener {
         }
         if (arguments != null) {
 
-             latitude = arguments?.getString("lat")!!.toDouble()
-             longitude = arguments?.getString("log")!!.toDouble()
+            latitude = arguments?.getString("lat")!!.toDouble()
+            longitude = arguments?.getString("log")!!.toDouble()
             addToCalendar(requireContext())
             val city = getCityName(requireContext(), latitude, longitude)
 
             rgNotification.setOnCheckedChangeListener { _, checkedId ->
                 when (checkedId) {
                     R.id.rBtnNotifications -> {
-                        if ( !Settings.canDrawOverlays(requireContext())) {
-                            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package: com.example.weatherforecastapplication.alerts.view"))
+                        if (!Settings.canDrawOverlays(requireContext())) {
+                            val intent = Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package: com.example.weatherforecastapplication.alerts.view")
+                            )
                             startActivityForResult(intent, 123)
                         }
 
                         type = "Alert"
 //                            btnSave.visibility = View.VISIBLE
 //                            btnCancel.visibility=View.GONE
-                        }
+                    }
 
                     R.id.rBtn2Notifications -> {
                         val alert = date?.let {
-                            val notificationManager=requireContext().getSystemService(
-                                NotificationManager::class.java)as NotificationManager
-                            if(notificationManager.areNotificationsEnabled()){
+                            val notificationManager = requireContext().getSystemService(
+                                NotificationManager::class.java
+                            ) as NotificationManager
+                            if (notificationManager.areNotificationsEnabled()) {
                                 Log.i("TAG", "onViewCreated: enable ")
-                            }
-                            else{
+                            } else {
                                 Log.i("TAG", "onViewCreated: disable")
                                 ActivityCompat.requestPermissions(
-                                requireContext() as Activity,
-                                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
-                                1
-                            )}
+                                    requireContext() as Activity,
+                                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                                    1
+                                )
+                            }
 
                         }
 
@@ -207,24 +216,110 @@ class AlertsFragment : Fragment(),AlertOnClickListener {
                 val alert = date?.let {
                     AlertWeather(
 
-                        city= city.toString(), date = it, lat =  latitude, lon =  longitude, type = type
+                        city = city.toString(),
+                        date = it,
+                        lat = latitude,
+                        lon = longitude,
+                        type = type
                     )
 
-                }
-                alert?.let { viewModel.insertAlertWeather(it) }
 
-                val request= date?.let {  getInitialDelayForFutureDate(it) }?.let {
-                    Log.i("TAG", "onViewCreated:${it-System.currentTimeMillis()} ")
+                }
+                alert?.let {
+                    viewModel.insertAlertWeather(it)
+                    Log.i("TAG", "onViewCreated: alert before send $alert")
+                }
+
+                val request = date?.let { getInitialDelayForFutureDate(it) }?.let {
+                    Log.i("TAG", "onViewCreated:${it - System.currentTimeMillis()} ")
 
                     OneTimeWorkRequestBuilder<Worker>()
-                        .setInputData(workDataOf("lat" to latitude,"log" to longitude ,"type" to type, "lang" to sViewModel.getLanguage(), "access" to sViewModel.getNotificationAccess()))
-                        .setInitialDelay(it-System.currentTimeMillis(),TimeUnit.MILLISECONDS)
+                        .setInputData(
+                            workDataOf(
+                                "lat" to latitude,
+                                "log" to longitude,
+                                "type" to type,
+                                "lang" to sViewModel.getLanguage(),
+                                "access" to sViewModel.getNotificationAccess(),
+                                "date" to date,
+                                "city" to city
+                            )
+                        )
+                        .setInitialDelay(it - System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                         .build()
 
                 }
                 request?.let {
                     Log.i("TAG", "onViewCreated: worker")
-                    WorkManager.getInstance(requireContext()).enqueue(it)}
+                    WorkManager.getInstance(requireContext()).enqueue(it)
+
+                    WorkManager.getInstance(requireContext()).getWorkInfoByIdLiveData(request.id)
+                        .observe(viewLifecycleOwner) { workInfo ->
+                            when (workInfo.state) {
+                                WorkInfo.State.SUCCEEDED -> {
+                                    // Retrieve output data from the Worker
+                                    val outputData = workInfo.outputData
+                                    val city = outputData.getString("city")
+                                    val date = outputData.getString("date")
+                                    val lat = outputData.getDouble("lat", 0.0)
+                                    val lon = outputData.getDouble("lon", 0.0)
+                                    val type = outputData.getString("type")
+
+                                    val alertWeather = AlertWeather(
+                                        0,
+                                        city.toString(),
+                                        date.toString(),
+                                        lat,
+                                        lon,
+                                        type.toString()
+                                    )
+                                    Log.i("TAG", "onViewCreated: alertWeather = $alertWeather")
+
+                                    // Delete the alertWeather item
+                                    viewModel.deleteAlertWeather(alertWeather)
+                                    lifecycleScope.launch {
+                                        viewModel.getAlertWeatherById(id = alertWeather.id.toLong())
+
+                                    }
+
+                                }
+
+                                WorkInfo.State.FAILED -> {
+                                    if (sViewModel.getNotificationAccess() == "enable")
+                                        showInternetConnectionDialog()
+                                    else{
+                                        val  dialog = Dialog(requireContext())
+                                        dialog.setContentView(R.layout.notification_daialog)
+                                        val btnCancel = dialog.findViewById<Button>(R.id.btnCancel)
+                                        val btnEnable = dialog.findViewById<Button>(R.id.btnEnable)
+                                        btnCancel.setOnClickListener {
+                                            dialog.dismiss()
+                                        }
+
+                                        btnEnable.setOnClickListener {
+                                            val settingsFragment = SettingsFragment()
+                                            val transaction = (context as AppCompatActivity).supportFragmentManager.beginTransaction()
+                                            transaction.replace(R.id.nav_host_fragment_activity_main, settingsFragment)
+                                            transaction.addToBackStack(null) // Optional: Add fragment to back stack
+                                            transaction.commit()
+                                            dialog.dismiss()
+                                        }
+                                        dialog.window?.setBackgroundDrawable(ColorDrawable(0))
+                                        dialog.show()
+
+                                    }
+                                        Log.e("TAG", "Work failed")
+                                }
+
+                                WorkInfo.State.CANCELLED -> {
+
+                                    Log.e("TAG", "Work cancelled")
+                                }
+
+                                else -> {}
+                            }
+                        }
+                }
 
 
                 dialog.dismiss()
@@ -243,6 +338,17 @@ class AlertsFragment : Fragment(),AlertOnClickListener {
 
     }
 
+    private fun showInternetConnectionDialog() {
+        val dialog = Dialog(requireContext())
+        dialog.setContentView(R.layout.network_daialog)
+        val btnOK = dialog.findViewById<Button>(R.id.btnOk)
+        btnOK.setOnClickListener {
+            dialog.dismiss()
+        }
+        dialog.window?.setBackgroundDrawable(ColorDrawable(0))
+        dialog.show()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -259,12 +365,8 @@ class AlertsFragment : Fragment(),AlertOnClickListener {
                     context,
                     { timePicker, selectedHour, selectedMinute ->
 
-                         date =
-                             "$selectedYear-${selectedMonth+1}-$selectedDay $selectedHour:$selectedMinute"
-
-
-
-
+                        date =
+                            "$selectedYear-${selectedMonth + 1}-$selectedDay $selectedHour:$selectedMinute"
 
                         calendar.set(
                             selectedYear,
@@ -273,7 +375,7 @@ class AlertsFragment : Fragment(),AlertOnClickListener {
                             selectedHour,
                             selectedMinute
                         )
-                        tvDate.text=date
+                        tvDate.text = date
                         dialog.show()
                     },
                     calendar.get(Calendar.HOUR_OF_DAY),
@@ -316,6 +418,7 @@ class AlertsFragment : Fragment(),AlertOnClickListener {
     override fun deleteItem(alertWeather: AlertWeather) {
         viewModel.deleteAlertWeather(alertWeather)
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun getInitialDelayForFutureDate(futureDateStr: String): Long {
         val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())

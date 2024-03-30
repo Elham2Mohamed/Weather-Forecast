@@ -47,19 +47,18 @@
         android:id="@+id/navigation_alerts"
         android:name="com.example.weatherforecastapplication.alerts.view.AlertsFragment"
         android:label="@string/title_alerts"
-        tools:layout="@layout/fragment_alerts" >
+        tools:layout="@layout/fragment_alerts">
         <action
             android:id="@+id/action_navigation_alerts_to_navigation_map"
-            app:destination="@id/navigation_map">
-        </action>
+            app:destination="@id/navigation_map"></action>
         <argument
             android:name="log"
-            app:argType="string"
-            android:defaultValue="0.0" />
+            android:defaultValue="0.0"
+            app:argType="string" />
         <argument
             android:name="lat"
-            app:argType="string"
-            android:defaultValue="0.0" />
+            android:defaultValue="0.0"
+            app:argType="string" />
 
     </fragment>
     <fragment

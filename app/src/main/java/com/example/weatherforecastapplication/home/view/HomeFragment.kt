@@ -2,11 +2,13 @@ package com.example.weatherforecastapplication.home.view
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.drawable.ColorDrawable
 import android.location.Location
 import android.location.LocationManager
 import android.net.ConnectivityManager
@@ -19,6 +21,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -26,6 +29,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -64,7 +68,7 @@ import kotlin.math.log
 
 
 const val REQUEST_LOCATION_CODE = 2005
-
+private const val PREFERENCES = "HOMEPREFERENCES"
 class HomeFragment : Fragment() {
     lateinit var image: String
     private lateinit var favFactory: FAVWeatherViewModelFactory
@@ -99,6 +103,14 @@ class HomeFragment : Fragment() {
     lateinit var date: LocalDate
     var isFirst = false
 
+   private  lateinit var sharedPreferences: SharedPreferences //=requireContext().getSharedPreferences(
+//        PREFERENCES,Context.MODE_PRIVATE)
+    private lateinit var editor: SharedPreferences.Editor //=sharedPreferences.edit()
+    private val LANGUAGE="language"
+    private val LONGITUDE="longitude"
+    private val LATITUDE="latitude"
+   private val DATE="date"
+
     private val binding get() = _binding!!
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -116,18 +128,35 @@ class HomeFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        sharedPreferences =requireContext().getSharedPreferences(
+        PREFERENCES,Context.MODE_PRIVATE)
+        editor=sharedPreferences.edit()
         setupViews()
         setupViewModel()
-        Log.i(
-
-            "TAG",
-            "onViewCreated: location : ${sViewModel.getLocation()} ,lang : ${sViewModel.language} ,lat: ${sViewModel.getLatitude()} ,lng : ${sViewModel.getLongitude()}, temp :${sViewModel.getTemp()}, speed : ${sViewModel.getSpeed()}, unit : ${sViewModel.getUnit()}"
-        )
+//        Log.i(
+//            "TAG",
+//            "onViewCreated: location : ${sViewModel.getLocation()} ,lang : ${sViewModel.language} ,lat: ${sViewModel.getLatitude()} ,lng : ${sViewModel.getLongitude()}, temp :${sViewModel.getTemp()}, speed : ${sViewModel.getSpeed()}}"
+//        )
         setupAdapters()
         checkStoredData()
 
         if (isConnectedToInternet()) {
+            if(sharedPreferences.getString(LANGUAGE,"en").toString()==sViewModel.getLanguage()&&sharedPreferences.getString(LATITUDE,"0.0")!!.toDouble()==sViewModel.getLatitude()&&sharedPreferences.getString(LONGITUDE,"0.0")!!.toDouble()==sViewModel.getLongitude()&&sharedPreferences.getString(DATE,"")==sViewModel.getDate()){
+                Log.i(
+                    "TAG",
+                    "onViewCreated: STRO location : ${sViewModel.getLocation()} ,lang : ${sViewModel.language} ,lat: ${sViewModel.getLatitude()} ,lng : ${sViewModel.getLongitude()}, temp :${sViewModel.getTemp()}, speed : ${sViewModel.getSpeed()}}"
+                )
+            }
+            else{
+                Log.i(
+                    "TAG",
+                    "onViewCreated: lang : ${sharedPreferences.getString(LANGUAGE,"en").toString()} ,lat: ${sharedPreferences.getString(LATITUDE,"0.0")!!.toDouble()} ,lng : ${sharedPreferences.getString(LONGITUDE,"0.0")!!.toDouble()}, date ${sharedPreferences.getString(DATE,"")}}"
+                )
+                Log.i(
+                    "TAG",
+                    "onViewCreated: API  location : ${sViewModel.getLocation()} ,lang : ${sViewModel.language} ,lat: ${sViewModel.getLatitude()} ,lng : ${sViewModel.getLongitude()}, temp :${sViewModel.getTemp()}, speed : ${sViewModel.getSpeed()},date : ${sViewModel.getDate()}}"
+                )
+            var isConnectedToInternet = true
             lifecycleScope.launch {
                 viewModel.currentWeather.collect { result ->
                     when (result) {
@@ -142,55 +171,61 @@ class HomeFragment : Fragment() {
                             recyclerView1.visibility = View.VISIBLE
                             recyclerView2.visibility = View.VISIBLE
                             weatherData = result.data
-//                            if (isFirst == true) {
-//                                fviewModel.insertWeather(result.data.copy(id = 1))
-//                                isFirst = false
-//                            } else {
-//                                val oldWeatherData = fviewModel.getWeatherById(1)
-//                                oldWeatherData?.let {
-//                                    fviewModel.deleteProduct(it)
-//                                }
-//                                fviewModel.insertWeather(result.data.copy(id = 1))
-//                            }
+
                             if (weatherData.list.isNotEmpty()) {
                                 val image1 = (weatherData.list[0].weather[0].icon)
                                 image = image1
+                                val dtTxt = weatherData.list[0].dt_txt
+                                val parts = dtTxt.split(" ")
+                                editor.putString(LANGUAGE, sViewModel.getLanguage())
+                                editor.putString(LATITUDE, sViewModel.getLatitude().toString())
+                                editor.putString(LONGITUDE, sViewModel.getLongitude().toString())
+                                editor.putString(DATE, parts[0])
+                                editor.apply()
                                 handleWeather(weatherData, image1)
                             } else {
-                                withContext(Dispatchers.Main){
-                                showInternetConnectionDialog()
-                                Log.i("TAG", "onViewCreated: Error no weatherData")
+                                withContext(Dispatchers.Main) {
+                                    if (isConnectedToInternet == true) {
+                                        runBlocking() {
+                                            isConnectedToInternet = false
+                                            showInternetConnectionDialog()
+
+                                        }
+                                    }
+                                    Log.i("TAG", "onViewCreated: Error no weatherData")
                                 }
                             }
                         }
 
                         else -> {
-                            if(fviewModel.getWeatherById(1)!=null){
-                                weatherData=fviewModel.getWeatherById(1)!!
+                            if (fviewModel.getWeatherById(1) != null) {
+                                weatherData = fviewModel.getWeatherById(1)!!
                                 val image1 = (weatherData.list[0].weather[0].icon)
                                 image = image1
                                 handleWeather(weatherData, image1)
-                            }
-                            else{
-                                withContext(Dispatchers.Main){
-                                showInternetConnectionDialog()}
-                            loader_view.visibility = View.GONE
-                            recyclerView1.visibility = View.GONE
-                            recyclerView2.visibility = View.GONE
+                            } else {
+                                withContext(Dispatchers.Main) {
+                                    showInternetConnectionDialog()
+                                }
+                                loader_view.visibility = View.GONE
+                                recyclerView1.visibility = View.GONE
+                                recyclerView2.visibility = View.GONE
 
-                            Log.i("TAG", "onViewCreated: Error")
-                             }
+                                Log.i("TAG", "onViewCreated: Error")
+                            }
                         }
 
                     }
                 }
             }
-            getFreshLocation()
-        } else {
-
+            getFreshLocation()}
+        }
+        else {
             showInternetConnectionDialog()
         }
     }
+
+
     private fun isConnectedToInternet(): Boolean {
         val connectivityManager =
             requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -198,16 +233,16 @@ class HomeFragment : Fragment() {
         return networkInfo != null && networkInfo.isConnected
     }
 
+
     private fun showInternetConnectionDialog() {
-       runBlocking() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("No Internet Connection")
-            .setMessage("Please check your internet connection and try again.")
-            .setPositiveButton("OK") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
-       }
+        val dialog = Dialog(requireContext())
+        dialog.setContentView(R.layout.network_daialog)
+        val btnOK = dialog.findViewById<Button>(R.id.btnOk)
+        btnOK.setOnClickListener {
+            dialog.dismiss()
+        }
+        dialog.window?.setBackgroundDrawable(ColorDrawable(0))
+        dialog.show()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -310,7 +345,7 @@ class HomeFragment : Fragment() {
         val dtTxt = weatherData.list[0].dt_txt
         val parts = dtTxt.split(" ")
         val part = parts[1].split(":")
-
+        sViewModel.setDate(parts[0])
 
         val dateString = parts[0]
         val formatter = if (language == "ar") {
@@ -351,7 +386,7 @@ class HomeFragment : Fragment() {
         }
 
         when {
-           temp == "fahrenheit" -> {
+            temp == "fahrenheit" -> {
                 tvDegree.text = convertKelvinToFahrenheit(weatherData.list[0].main.temp).toInt()
                     .toString() + "°F"
                 tvTemp.text = convertKelvinToFahrenheit(weatherData.list[0].main.temp).toInt()
@@ -445,26 +480,26 @@ class HomeFragment : Fragment() {
             if (sViewModel.getLocation() == "gps") {
                 handleGps(location)
             } else {
-                if(arguments!=null){
-                val argLatitude = arguments?.getString("lat")!!.toDouble()
-                val argLongitude = arguments?.getString("log")!!.toDouble()
+                if (arguments != null) {
+                    val argLatitude = arguments?.getString("lat")!!.toDouble()
+                    val argLongitude = arguments?.getString("log")!!.toDouble()
 
-                val longitude = if (argLongitude != null) {
-                    sViewModel.setLongitude(argLongitude)
-                    argLongitude
-                } else {
-                    sViewModel.getLongitude()
-                }
+                    val longitude = if (argLongitude != null) {
+                        sViewModel.setLongitude(argLongitude)
+                        argLongitude
+                    } else {
+                        sViewModel.getLongitude()
+                    }
 
-                val latitude = if (argLatitude != null) {
-                    sViewModel.setLongitude(argLatitude)
-                    argLatitude
-                } else {
-                    sViewModel.getLatitude()
+                    val latitude = if (argLatitude != null) {
+                        sViewModel.setLongitude(argLatitude)
+                        argLatitude
+                    } else {
+                        sViewModel.getLatitude()
+                    }
+                    handleMap(LatLng(longitude, latitude))
+                    arguments = null
                 }
-                handleMap(LatLng(longitude, latitude))
-                  arguments=null
-            }
             }
         }
     }
@@ -490,6 +525,7 @@ class HomeFragment : Fragment() {
             }
         }
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun handleGps(location: Location) {
         sViewModel.setLongitude(location.longitude)
@@ -533,8 +569,6 @@ class HomeFragment : Fragment() {
             requestLocationPermissions()
         }
     }
-
-
 
 
     @RequiresApi(Build.VERSION_CODES.O)

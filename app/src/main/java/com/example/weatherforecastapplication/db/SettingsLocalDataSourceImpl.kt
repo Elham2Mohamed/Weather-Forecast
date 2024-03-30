@@ -9,7 +9,7 @@ private const val PREFERENCES = "PREFERENCES"
 class SettingsLocalDataSourceImpl  (var context: Context):SettingsLocalDataSource{
      private var sharedPreferences: SharedPreferences =context.applicationContext.getSharedPreferences(PREFERENCES,Context.MODE_PRIVATE)
     private var editor: SharedPreferences.Editor =sharedPreferences.edit()
-    private val UNIT="unit"
+    private val DATE="date"
     private val LANGUAGE="language"
     private val SPEED="speed"
     private val LOCATION="location"
@@ -20,7 +20,6 @@ class SettingsLocalDataSourceImpl  (var context: Context):SettingsLocalDataSourc
     init {
         if(!sharedPreferences.contains(LANGUAGE)){
             setLanguage("en")
-            setUnit("metric")
             setSpeed("meter/sec")
             setLocation("gps")
             setTemp("kelvin")
@@ -41,10 +40,10 @@ class SettingsLocalDataSourceImpl  (var context: Context):SettingsLocalDataSourc
         editor.apply()
     }
 
-    override fun setUnit(unit: String) {
+    override fun setDate(date: String) {
 //        editor.remove(UNIT)
 //        editor.apply()
-        editor.putString(UNIT, unit)
+        editor.putString(DATE, date)
         editor.apply()
     }
 
@@ -84,8 +83,8 @@ class SettingsLocalDataSourceImpl  (var context: Context):SettingsLocalDataSourc
         return sharedPreferences.getString(LANGUAGE,"en").toString()
     }
 
-    override fun getUnit(): String {
-         return sharedPreferences.getString(UNIT,"metric").toString()
+    override fun getDate(): String {
+         return sharedPreferences.getString(DATE,"").toString()
 
     }
 

@@ -114,4 +114,12 @@ class FakeRepository(private val remoteDataSource: RemoteDataSourceImpl,
         TODO("Not yet implemented")
     }
 
+    override fun getNotificationAccess(): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun setNotificationAccess(access: String) {
+        TODO("Not yet implemented")
+    }
+
 }

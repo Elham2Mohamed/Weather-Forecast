@@ -1,9 +1,12 @@
 package com.example.weatherforecastapplication.favorite.view
 
 import android.annotation.SuppressLint
+import android.app.Dialog
+import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -35,7 +38,23 @@ class FAVWeatherAdapter(
             }
             holder.city.text = current.city?.name ?: "Cairo"
 
-            holder.btnDelete.setOnClickListener { onClickListener.deleteItem(current) }
+            holder.btnDelete.setOnClickListener {
+                val  dialog = Dialog(holder.itemView.context)
+                dialog.setContentView(R.layout.delete_daialog)
+                val btnCancel = dialog.findViewById<Button>(R.id.btnCancel)
+                val btnDelete = dialog.findViewById<Button>(R.id.btnDelete)
+                btnCancel.setOnClickListener {
+                    dialog.dismiss()
+                }
+
+                btnDelete.setOnClickListener {
+                    onClickListener.deleteItem(current)
+                    dialog.dismiss()
+                }
+                dialog.window?.setBackgroundDrawable(ColorDrawable(0))
+                dialog.show()
+
+                }
             holder.itemView.setOnClickListener { onClickListener.onClickItem(current) }
 
             when {

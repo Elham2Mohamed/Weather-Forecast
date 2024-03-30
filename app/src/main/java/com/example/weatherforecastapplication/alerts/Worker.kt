@@ -11,17 +11,17 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.util.Log
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.RadioGroup
 import android.widget.TextView
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.content.ContextCompat.startForegroundService
+import androidx.annotation.RequiresApi
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.example.weatherforecastapplication.R
 import com.example.weatherforecastapplication.model.WeatherData
 import com.example.weatherforecastapplication.network.WeatherService
@@ -36,6 +36,7 @@ open class Worker(context: Context, params:WorkerParameters):Worker(context,para
     private  val BASE_URL = "https://api.openweathermap.org/data/2.5/"
     lateinit var dialog: Dialog
     lateinit var tvDesc:TextView
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("LogNotTimber")
     override fun doWork(): Result {
         Log.i("TAG", "doWork: enter1 ")
@@ -44,8 +45,12 @@ open class Worker(context: Context, params:WorkerParameters):Worker(context,para
         val log=inputData.getDouble("log",0.0)
         val lang=inputData.getString("lang")
         val type=inputData.getString("type")
+        val date=inputData.getString("date")
+        val city=inputData.getString("city")
+
         val access=inputData.getString("access")
         Log.i("TAG", "doWork: lat $lat ,log $log ,lang $lang ,type $type ")
+
          val retrofit=Retrofit.Builder().addConverterFactory(GsonConverterFactory.create()).
          baseUrl(BASE_URL)
          .build()
@@ -70,13 +75,22 @@ open class Worker(context: Context, params:WorkerParameters):Worker(context,para
                    val notificationManager=applicationContext.getSystemService(NotificationManager::class.java)as NotificationManager
                    if(notificationManager.areNotificationsEnabled()){
                        Log.i("TAG", "doWork: enter3 ")
+                       val outputData = workDataOf(
+                           "city" to city,
+                           "date" to date,
+                           "lat" to lat,
+                           "lon" to log,
+                           "type" to type
+                       )
+                       Log.i("TAG", "doWork:notAlert $outputData")
                        response!!.city?.name?.let {
-                           createNotification(applicationContext,
+                           createNotification(
+                               applicationContext,
                                response!!.list[0].weather[0].description, it
                            )
                        }
+                       return Result.success(outputData)
 
-                       return Result.success()
                    }
                    else{
                        Log.i("TAG", "doWork: enter 4")
@@ -96,10 +110,24 @@ open class Worker(context: Context, params:WorkerParameters):Worker(context,para
                              val icon = response!!.list[0].weather[0].icon
                              val city=response!!.city?.name
                              val desc = response!!.list[0].weather[0].description
-                             showAlertDialog(applicationContext.applicationContext)
-                             //  city?.let { displayDialog(desc, it,icon) }
+                             city?.let {
+                                 showAlertDialog(applicationContext.applicationContext,desc,
+                                     it,icon)
+                             }
+
+
                          }
                      }
+                    val outputData = workDataOf(
+                        "city" to city,
+                        "date" to date,
+                        "lat" to lat,
+                        "lon" to log,
+                        "type" to type
+
+                    )
+
+                    return Result.success(outputData)
 
                 }
                else{
@@ -114,62 +142,56 @@ open class Worker(context: Context, params:WorkerParameters):Worker(context,para
         }
         else
         {
+            showInternetConnectionDialog()
             Log.i("TAG", "doWork: enter 8")
 
             return Result.failure()
         }
 
-
         return Result.success()
-
     }
 
-    private fun showAlertDialog(context: Context) {
-        val builder = AlertDialog.Builder(context)
-        builder.setTitle("Alert Dialog")
-        builder.setMessage("This is an example of an alert dialog.")
-
-        // Set positive button with its action
-        builder.setPositiveButton("OK") { dialog, which ->
-            // Action to perform when OK button is clicked
-            dialog.dismiss() // Dismiss the dialog
-        }
-
-        // Set negative button with its action
-        builder.setNegativeButton("Cancel") { dialog, which ->
-            // Action to perform when Cancel button is clicked
-            dialog.dismiss() // Dismiss the dialog
-        }
-
-        val alertDialog = builder.create()
-        alertDialog.window?.apply {
-            setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
-        }
-        alertDialog.show()
-    }
-
-
-    private fun displayDialog(desc:String,city:String,icon:String) {
-        dialog = Dialog(applicationContext)
-        dialog.setContentView(R.layout.alert_daialog)
+    private fun showInternetConnectionDialog() {
+        val  dialog = Dialog(applicationContext)
+        dialog.setContentView(R.layout.network_daialog)
         val btnOK = dialog.findViewById<Button>(R.id.btnOk)
-        tvDesc=dialog.findViewById<TextView>(R.id.tvDesc)
-         val imgIcon=dialog.findViewById<ImageView>(R.id.icon)
-        val dCity=when(city) {
-            "Mountain View" -> "Cairo"
-            "ماونتن فيو" -> "القاهرة"
-            else -> city
-        }
-
-        tvDesc.text=" $desc, in $dCity"
-        imgIcon.setImageResource(getImage(icon))
-
         btnOK.setOnClickListener {
             dialog.dismiss()
         }
         dialog.window?.setBackgroundDrawable(ColorDrawable(0))
-
+        dialog.show()
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun showAlertDialog(context: Context, desc: String, city: String, icon: String) {
+        val inflater = LayoutInflater.from(context)
+        val view = inflater.inflate(R.layout.alarm_daialog, null)
+
+        // Initialize views from the custom layout
+        val tvDesc = view.findViewById<TextView>(R.id.tvDesc)
+        val imgIcon = view.findViewById<ImageView>(R.id.icon)
+        val btnOK = view.findViewById<Button>(R.id.btnOk)
+
+        // Set text and image based on parameters
+        val dCity = when (city) {
+            "Mountain View" -> "Cairo"
+            "ماونتن فيو" -> "القاهرة"
+            else -> city
+        }
+        tvDesc.text = " $desc, in $dCity"
+        imgIcon.setImageResource(getImage(icon))
+        val dialog = AlertDialog.Builder(context).setView(view).create()
+        // Set onClickListener for the OK button to dismiss the dialog
+        btnOK.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.window?.setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
+
+        dialog.show()
+    }
+
+
     fun getImage(image: String): Int {
         when (image) {
             "01d" -> return R.drawable.cleard

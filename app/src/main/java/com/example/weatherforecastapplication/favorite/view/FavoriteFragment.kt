@@ -2,13 +2,16 @@ package com.example.weatherforecastapplication.favorite.view
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Intent
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -105,17 +108,22 @@ class FavoriteFragment : Fragment(), FavOnClickListener {
         )
         val viewModelFactory = HomeViewModelFactory(repository)
         hviewModel = ViewModelProvider(this, viewModelFactory).get(HomeViewModel::class.java)
-          var x =false
+        var x = false
         lifecycleScope.launch {
             hviewModel.currentWeather.collect { result ->
                 when (result) {
                     is ApiState.Success -> {
-                        if(x==true){
-                            viewModel.insertWeather(result.data)
-                        x=false
+                        if (x == true) {
+                            if (result.data.list.isNotEmpty()) {
+                                viewModel.insertWeather(result.data)
+                                x = false
+                            }
+                            else
+                                showInternetConnectionDialog()
                         }
                     }
-                    is ApiState.Failure-> {
+
+                    is ApiState.Failure -> {
                         showInternetConnectionDialog()
                     }
 
@@ -126,11 +134,11 @@ class FavoriteFragment : Fragment(), FavOnClickListener {
             }
         }
 
-        if (arguments != null&& arguments?.getInt("id") == 2) {
+        if (arguments != null && arguments?.getInt("id") == 2) {
             val latitude = arguments?.getString("lat")!!.toDouble()
 
             val longitude = arguments?.getString("log")!!.toDouble()
-               x=true
+            x = true
             hviewModel.getCurrentWeather(
                 latitude,
                 longitude,
@@ -199,15 +207,15 @@ class FavoriteFragment : Fragment(), FavOnClickListener {
     fun convertKelvinToFahrenheit(kelvin: Double): Double {
         return ((kelvin * 9) / 5) - 459.67
     }
+
     private fun showInternetConnectionDialog() {
-        runBlocking() {
-            AlertDialog.Builder(requireContext())
-                .setTitle("No Internet Connection")
-                .setMessage("Please check your internet connection and try again.")
-                .setPositiveButton("OK") { dialog, _ ->
-                    dialog.dismiss()
-                }
-                .show()
+        val  dialog = Dialog(requireContext())
+        dialog.setContentView(R.layout.network_daialog)
+        val btnOK = dialog.findViewById<Button>(R.id.btnOk)
+        btnOK.setOnClickListener {
+            dialog.dismiss()
         }
+        dialog.window?.setBackgroundDrawable(ColorDrawable(0))
+        dialog.show()
     }
 }
