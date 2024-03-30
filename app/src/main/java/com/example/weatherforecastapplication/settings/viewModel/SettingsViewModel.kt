@@ -16,63 +16,75 @@ import kotlinx.coroutines.withContext
 
 class SettingsViewModel(private val repository: WeatherRepository) : ViewModel() {
 
-    private val _lang : MutableStateFlow < String > = MutableStateFlow<String>(repository.getLanguage())
-    val  language: StateFlow<String> = _lang
+    private val _lang: MutableStateFlow<String> = MutableStateFlow<String>(repository.getLanguage())
+    val language: StateFlow<String> = _lang
 
-     fun setLanguage(lang: String) {
-         _lang.value = lang
-         repository.setLanguage(lang)
+    fun setLanguage(lang: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _lang.value = lang
+            repository.setLanguage(lang)
+        }
+
+
     }
 
-     fun setTemp(temp: String) {
-         repository.setTemp(temp)
+    fun setTemp(temp: String) {
+        repository.setTemp(temp)
     }
 
-     fun setUnit(unit: String) {
-         repository.setUnit(unit)
+    fun setNotificationAccess(access: String) {
+        repository.setNotificationAccess(access)
     }
 
-     fun setSpeed(speed: String) {
-         repository.setSpeed(speed)
+    fun setUnit(unit: String) {
+        repository.setUnit(unit)
     }
 
-     fun setLocation(location: String) {
-         repository.setLocation(location)
+    fun setSpeed(speed: String) {
+        repository.setSpeed(speed)
     }
 
-     fun setLongitude(lng: Double) {
-         repository.setLongitude(lng)
+    fun setLocation(location: String) {
+        repository.setLocation(location)
     }
 
-     fun setLatitude(lat: Double) {
-         repository.setLatitude(lat)
+    fun setLongitude(lng: Double) {
+        repository.setLongitude(lng)
     }
 
-     fun getTemp():String {
+    fun setLatitude(lat: Double) {
+        repository.setLatitude(lat)
+    }
+
+    fun getTemp(): String {
         return repository.getTemp()
     }
 
-     fun getLanguage(): String {
+    fun getNotificationAccess(): String {
+        return repository.getNotificationAccess()
+    }
+
+    fun getLanguage(): String {
         return repository.getLanguage()
     }
 
-     fun getUnit(): String {
+    fun getUnit(): String {
         return repository.getUnit()
     }
 
-     fun getSpeed(): String {
+    fun getSpeed(): String {
         return repository.getSpeed()
     }
 
-     fun getLocation(): String {
+    fun getLocation(): String {
         return repository.getLocation()
     }
 
-     fun getLongitude(): Double {
+    fun getLongitude(): Double {
         return repository.getLongitude()
     }
 
-     fun getLatitude(): Double {
+    fun getLatitude(): Double {
         return repository.getLatitude()
     }
 

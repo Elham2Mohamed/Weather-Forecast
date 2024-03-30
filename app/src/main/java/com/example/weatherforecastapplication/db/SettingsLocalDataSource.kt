@@ -16,5 +16,7 @@ interface SettingsLocalDataSource {
     abstract  fun getLocation():String
     abstract  fun getLongitude():Double
     abstract  fun getLatitude():Double
+    abstract fun getNotificationAccess(): String
+    abstract fun setNotificationAccess(access: String)
 
 }

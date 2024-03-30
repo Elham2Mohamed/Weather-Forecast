@@ -10,6 +10,7 @@ import android.content.res.Configuration
 import android.location.Location
 import android.location.LocationManager
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
@@ -34,6 +35,7 @@ import com.example.mymvvmapplication.favproduct.viewmodel.FAVWeatherViewModel
 import com.example.mymvvmapplication.favproduct.viewmodel.FAVWeatherViewModelFactory
 import com.example.weatherforecastapplication.R
 import com.example.weatherforecastapplication.databinding.FragmentHomeBinding
+import com.example.weatherforecastapplication.db.AlertLocalDataSourceImpl
 import com.example.weatherforecastapplication.db.SettingsLocalDataSourceImpl
 import com.example.weatherforecastapplication.db.WeatherLocalDataSource
 import com.example.weatherforecastapplication.home.viewModle.HomeViewModel
@@ -51,7 +53,10 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -93,7 +98,6 @@ class HomeFragment : Fragment() {
     lateinit var temp: String
     lateinit var date: LocalDate
     var isFirst = false
-//lateinit var args
 
     private val binding get() = _binding!!
 
@@ -108,6 +112,7 @@ class HomeFragment : Fragment() {
         return root
     }
 
+    @SuppressLint("LogNotTimber")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -115,6 +120,7 @@ class HomeFragment : Fragment() {
         setupViews()
         setupViewModel()
         Log.i(
+
             "TAG",
             "onViewCreated: location : ${sViewModel.getLocation()} ,lang : ${sViewModel.language} ,lat: ${sViewModel.getLatitude()} ,lng : ${sViewModel.getLongitude()}, temp :${sViewModel.getTemp()}, speed : ${sViewModel.getSpeed()}, unit : ${sViewModel.getUnit()}"
         )
@@ -136,40 +142,55 @@ class HomeFragment : Fragment() {
                             recyclerView1.visibility = View.VISIBLE
                             recyclerView2.visibility = View.VISIBLE
                             weatherData = result.data
-                            if (isFirst) {
-                                fviewModel.insertWeather(result.data)
-                                isFirst = false
-                            } else {
-                                val oldWeatherData = fviewModel.getWeatherById(1)
-                                oldWeatherData?.let {
-                                    fviewModel.deleteProduct(it)
-                                }
-                                fviewModel.insertWeather(result.data.copy(id = 1))
-                            }
+//                            if (isFirst == true) {
+//                                fviewModel.insertWeather(result.data.copy(id = 1))
+//                                isFirst = false
+//                            } else {
+//                                val oldWeatherData = fviewModel.getWeatherById(1)
+//                                oldWeatherData?.let {
+//                                    fviewModel.deleteProduct(it)
+//                                }
+//                                fviewModel.insertWeather(result.data.copy(id = 1))
+//                            }
                             if (weatherData.list.isNotEmpty()) {
                                 val image1 = (weatherData.list[0].weather[0].icon)
                                 image = image1
                                 handleWeather(weatherData, image1)
                             } else {
+                                withContext(Dispatchers.Main){
+                                showInternetConnectionDialog()
                                 Log.i("TAG", "onViewCreated: Error no weatherData")
+                                }
                             }
                         }
 
                         else -> {
+                            if(fviewModel.getWeatherById(1)!=null){
+                                weatherData=fviewModel.getWeatherById(1)!!
+                                val image1 = (weatherData.list[0].weather[0].icon)
+                                image = image1
+                                handleWeather(weatherData, image1)
+                            }
+                            else{
+                                withContext(Dispatchers.Main){
+                                showInternetConnectionDialog()}
                             loader_view.visibility = View.GONE
                             recyclerView1.visibility = View.GONE
                             recyclerView2.visibility = View.GONE
+
                             Log.i("TAG", "onViewCreated: Error")
+                             }
                         }
+
                     }
                 }
             }
             getFreshLocation()
         } else {
+
             showInternetConnectionDialog()
         }
     }
-
     private fun isConnectedToInternet(): Boolean {
         val connectivityManager =
             requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -178,6 +199,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun showInternetConnectionDialog() {
+       runBlocking() {
         AlertDialog.Builder(requireContext())
             .setTitle("No Internet Connection")
             .setMessage("Please check your internet connection and try again.")
@@ -185,6 +207,7 @@ class HomeFragment : Fragment() {
                 dialog.dismiss()
             }
             .show()
+       }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -199,7 +222,8 @@ class HomeFragment : Fragment() {
             WeatherRepositoryImp.getInstance(
                 RemoteDataSourceImpl(),
                 WeatherLocalDataSource(requireContext()),
-                SettingsLocalDataSourceImpl(requireContext())
+                SettingsLocalDataSourceImpl(requireContext()),
+                AlertLocalDataSourceImpl(requireContext())
             )
         )
 
@@ -208,7 +232,8 @@ class HomeFragment : Fragment() {
 
         val repository = WeatherRepositoryImp.getInstance(
             RemoteDataSourceImpl(),
-            WeatherLocalDataSource(requireContext()), SettingsLocalDataSourceImpl(requireContext())
+            WeatherLocalDataSource(requireContext()), SettingsLocalDataSourceImpl(requireContext()),
+            AlertLocalDataSourceImpl(requireContext())
         )
         val viewModelFactory = HomeViewModelFactory(repository)
         viewModel = ViewModelProvider(this, viewModelFactory).get(HomeViewModel::class.java)
@@ -216,7 +241,8 @@ class HomeFragment : Fragment() {
             WeatherRepositoryImp.getInstance(
                 RemoteDataSourceImpl(),
                 WeatherLocalDataSource(requireContext()),
-                SettingsLocalDataSourceImpl(requireContext())
+                SettingsLocalDataSourceImpl(requireContext()),
+                AlertLocalDataSourceImpl(requireContext())
             )
         )
 
@@ -314,93 +340,38 @@ class HomeFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     private fun changeTempAndSpeed() {
         when {
-            speed == "meter/sec" && temp == "fahrenheit" -> {
-                if (sViewModel.getTemp() != "fahrenheit") {
-                    tvDegree.text = convertKelvinToFahrenheit(weatherData.list[0].main.temp).toInt()
-                        .toString() + "°F" //celsiusToFahrenheit().toString() + "°F"
-                    tvTemp.text = convertKelvinToFahrenheit(weatherData.list[0].main.temp).toInt()
-                        .toString() + "°F"
-                } else {
-                    tvDegree.text = (weatherData.list[0].main.temp).toInt().toString() + "°F"
-                    tvTemp.text = (weatherData.list[0].main.temp).toInt().toString() + "°F"
+            speed == "miles/hour" -> {
+                val result = (weatherData.list[0].wind.speed * 2.24)
+                tvWind.text = "${String.format("%.2f", result).toDouble()}  m/h"
+            }
 
-                }
+            else -> {
                 tvWind.text = ((weatherData.list[0].wind.speed)).toInt().toString() + " m/s"
             }
+        }
 
-            speed == "miles/hour" && temp == "celsius" -> {
-                if (sViewModel.getTemp() != "celsius") {
-                    tvDegree.text = convertKelvinToCelsius(weatherData.list[0].main.temp).toInt()
-                        .toString() + "°C"
-                    tvTemp.text = convertKelvinToCelsius(weatherData.list[0].main.temp).toInt()
-                        .toString() + "°C"
-                } else {
-                    tvDegree.text = (weatherData.list[0].main.temp).toInt()
-                        .toString() + "°C"
-                    tvTemp.text = (weatherData.list[0].main.temp).toInt()
-                        .toString() + "°C"
+        when {
+           temp == "fahrenheit" -> {
+                tvDegree.text = convertKelvinToFahrenheit(weatherData.list[0].main.temp).toInt()
+                    .toString() + "°F"
+                tvTemp.text = convertKelvinToFahrenheit(weatherData.list[0].main.temp).toInt()
+                    .toString() + "°F"
 
-                }
-                if (sViewModel.getSpeed() != "miles/hour") {
-                    val result = (weatherData.list[0].wind.speed * 2.24)
-                    tvWind.text = "${String.format("%.2f", result).toDouble()}  m/h"
-                } else {
-                    tvWind.text = weatherData.list[0].wind.speed.toString() + " m/h"
-                }
             }
 
-            speed == "miles/hour" && temp == "kelvin" -> {
-                tvDegree.text = weatherData.list[0].main.temp.toString() + "°K"
-                if (sViewModel.getSpeed() != "miles/hour") {
-                    val result = (weatherData.list[0].wind.speed * 2.24)
-                    tvWind.text = "${String.format("%.2f", result).toDouble()}  m/h"
-                } else {
-                    tvWind.text = weatherData.list[0].wind.speed.toString() + " m/h"
-                }
-                tvTemp.text = weatherData.list[0].main.temp.toString() + "°K"
-            }
-
-            speed == "miles/hour" && temp == "fahrenheit" -> {
-                if (sViewModel.getTemp() != "fahrenheit") {
-                    tvDegree.text = convertKelvinToFahrenheit(weatherData.list[0].main.temp).toInt()
-                        .toString() + "°F"
-                    tvTemp.text = convertKelvinToFahrenheit(weatherData.list[0].main.temp).toInt()
-                        .toString() + "°F"
-                } else {
-                    tvDegree.text = (weatherData.list[0].main.temp).toInt().toString() + "°F"
-                    tvTemp.text = (weatherData.list[0].main.temp).toInt().toString() + "°F"
-
-                }
-                if (sViewModel.getSpeed() != "miles/hour") {
-                    val result = (weatherData.list[0].wind.speed * 2.24)
-                    tvWind.text = "${String.format("%.2f", result).toDouble()}  m/h"
-                } else {
-                    tvWind.text = weatherData.list[0].wind.speed.toString() + " m/h"
-                }
-            }
-
-            (speed == "meter/sec" && temp == "celsius") -> {
-                if (sViewModel.getTemp() != "celsius") {
-                    tvDegree.text = convertKelvinToCelsius(weatherData.list[0].main.temp).toInt()
-                        .toString() + "°C"
-                    tvTemp.text = convertKelvinToCelsius(weatherData.list[0].main.temp).toInt()
-                        .toString() + "°C"
-                } else {
-                    tvDegree.text = (weatherData.list[0].main.temp).toInt()
-                        .toString() + "°C"//fahrenheitToCelsius().toString() + "°C"
-                    tvTemp.text = (weatherData.list[0].main.temp).toInt()
-                        .toString() + "°C"
-
-                }
-                tvWind.text = weatherData.list[0].wind.speed.toString() + " m/s"
+            temp == "celsius" -> {
+                tvDegree.text = convertKelvinToCelsius(weatherData.list[0].main.temp).toInt()
+                    .toString() + "°C"
+                tvTemp.text = convertKelvinToCelsius(weatherData.list[0].main.temp).toInt()
+                    .toString() + "°C"
             }
 
             else -> {
                 tvDegree.text = weatherData.list[0].main.temp.toString() + "°K"
                 tvTemp.text = weatherData.list[0].main.temp.toString() + "°K"
-                tvWind.text = weatherData.list[0].wind.speed.toString() + " m/s"
 
             }
+
         }
     }
 
@@ -459,7 +430,6 @@ class HomeFragment : Fragment() {
                 val selectedLatLng = args.getParcelable<LatLng>("selectedLatLng")
                 isFavMap = true
                 selectedLatLng?.let {
-                    //  if (units == "null")
                     viewModel.getCurrentWeather(
                         selectedLatLng.latitude,
                         selectedLatLng.longitude,
@@ -509,6 +479,17 @@ class HomeFragment : Fragment() {
         )
     }
 
+
+    private val locationCallback = object : LocationCallback() {
+        @RequiresApi(Build.VERSION_CODES.O)
+        override fun onLocationResult(locationResult: LocationResult) {
+            super.onLocationResult(locationResult)
+            val location = locationResult.lastLocation
+            location?.let {
+                handleLocation(it)
+            }
+        }
+    }
     @RequiresApi(Build.VERSION_CODES.O)
     private fun handleGps(location: Location) {
         sViewModel.setLongitude(location.longitude)
@@ -553,16 +534,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private val locationCallback = object : LocationCallback() {
-        @RequiresApi(Build.VERSION_CODES.O)
-        override fun onLocationResult(locationResult: LocationResult) {
-            super.onLocationResult(locationResult)
-            val location = locationResult.lastLocation
-            location?.let {
-                handleLocation(it)
-            }
-        }
-    }
+
 
 
     @RequiresApi(Build.VERSION_CODES.O)

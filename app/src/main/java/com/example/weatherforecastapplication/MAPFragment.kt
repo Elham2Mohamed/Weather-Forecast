@@ -1,5 +1,6 @@
 package com.example.weatherforecastapplication
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.location.Address
@@ -46,7 +47,18 @@ class MAPFragment : Fragment(), OnMapReadyCallback {
     ): View? {
         return inflater.inflate(R.layout.fragment_m_a_p, container, false)
     }
+    override fun onStart() {
+        super.onStart()
+        val homeActivity = requireActivity() as MainActivity
+        homeActivity.binding.navView.visibility = View.GONE
+    }
 
+    override fun onStop() {
+        super.onStop()
+        val homeActivity = requireActivity() as MainActivity
+        homeActivity.binding.navView.visibility = View.VISIBLE
+    }
+    @SuppressLint("LogNotTimber")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -57,7 +69,7 @@ class MAPFragment : Fragment(), OnMapReadyCallback {
         tvSearch = view.findViewById(R.id.tvSearch)
 
 
-        btnSave.setOnClickListener {i->
+        btnSave.setOnClickListener {
             selectedLatLng?.let {
                 Log.i("TAG", "onViewCreated: map (latitude= ${it.latitude},longitude= ${it.longitude})")
                 navigateToHomeFragment(it)
@@ -102,6 +114,7 @@ class MAPFragment : Fragment(), OnMapReadyCallback {
                         val action = MAPFragmentDirections.actionNavigationMapToNavigationHome()
                         action.lat =selectedLatLng.latitude.toString()
                         action.log=selectedLatLng.longitude.toString()
+
                         navController.navigate(action)
                     }
                 }
@@ -112,6 +125,7 @@ class MAPFragment : Fragment(), OnMapReadyCallback {
                         val action = MAPFragmentDirections.actionNavigationMapToNavigationFavorite()
                         action.lat =selectedLatLng.latitude.toString()
                         action.log=selectedLatLng.longitude.toString()
+                        action.id = 2
                         navController.navigate(action)
                     }
                 }

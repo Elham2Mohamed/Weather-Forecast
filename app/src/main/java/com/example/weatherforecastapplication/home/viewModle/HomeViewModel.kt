@@ -24,27 +24,9 @@ class HomeViewModel(private val repository: WeatherRepository) : ViewModel() {
     private val _currentWeather : MutableStateFlow < ApiState > = MutableStateFlow(ApiState.Loading)
     val currentWeather: StateFlow<ApiState> = _currentWeather
 
+    @SuppressLint("LogNotTimber")
     private val coroutineExceptionHandler = CoroutineExceptionHandler { _, exception ->
         Log.i("TAG", "Exception HomeViewModel : $exception")
-    }
-
-    @SuppressLint("SuspiciousIndentation")
-    fun getCurrentWeather(lat: Double, lon: Double, lang:String, units :String, apiKey: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-
-        val weather = repository.getCurrentWeather(lat, lon,lang,units , apiKey)
-           weather.catch { e ->
-                withContext(Dispatchers.Main) {
-                    _currentWeather.value = ApiState.Failure(e)
-                }
-            }
-            .collect {
-                withContext(Dispatchers.Main) {
-                    _currentWeather.value = ApiState.Success(it)
-                }
-            }
-
-        }
     }
 
     fun getCurrentWeather(lat: Double, lon: Double, lang:String, apiKey: String) {

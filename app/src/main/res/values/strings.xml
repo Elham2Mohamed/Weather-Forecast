@@ -31,4 +31,10 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="save">Save</string>
+    <string name="set_alert">Set Alert</string>
+    <string name="alert">Alert</string>
+    <string name="alarm">Alarm</string>
+    <string name="cancel">Cancel</string>
+    <string name="weather_forecast">Weather Forecast</string>
+    <string name="ok">OK</string>
 </resources>

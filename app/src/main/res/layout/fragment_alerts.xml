@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorPrimary"
-    tools:context=".alerts.AlertsFragment">
+    tools:context=".alerts.view.AlertsFragment">
 
 
     <androidx.recyclerview.widget.RecyclerView

@@ -1,9 +1,9 @@
 package com.example.weatherforecastapplication
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -12,11 +12,10 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.example.weatherforecastapplication.alerts.AlertsFragment
 import com.example.weatherforecastapplication.databinding.ActivityMainBinding
+import com.example.weatherforecastapplication.db.AlertLocalDataSourceImpl
 import com.example.weatherforecastapplication.db.SettingsLocalDataSourceImpl
 import com.example.weatherforecastapplication.db.WeatherLocalDataSource
-import com.example.weatherforecastapplication.favorite.view.FavoriteFragment
 import com.example.weatherforecastapplication.home.view.HomeFragment
 import com.example.weatherforecastapplication.model.RemoteDataSourceImpl
 import com.example.weatherforecastapplication.model.WeatherRepositoryImp
@@ -32,8 +31,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var sFactory: SettingsViewModelFactory
     private lateinit var sViewModel: SettingsViewModel
-    private lateinit var binding: ActivityMainBinding
+    lateinit var binding: ActivityMainBinding
 
+    @SuppressLint("LogNotTimber")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportActionBar?.hide()
@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
                 RemoteDataSourceImpl(),
                 WeatherLocalDataSource(this),
                 SettingsLocalDataSourceImpl(this)
+                ,AlertLocalDataSourceImpl(this)
             )
         )
 

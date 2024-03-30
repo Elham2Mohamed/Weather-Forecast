@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.weatherforecastapplication.R
+import com.example.weatherforecastapplication.db.AlertLocalDataSourceImpl
 import com.example.weatherforecastapplication.db.SettingsLocalDataSourceImpl
 import com.example.weatherforecastapplication.db.WeatherLocalDataSource
 import com.example.weatherforecastapplication.model.RemoteDataSourceImpl
@@ -20,7 +21,6 @@ import com.example.weatherforecastapplication.settings.viewModel.SettingsViewMod
 import com.example.weatherforecastapplication.settings.viewModel.SettingsViewModelFactory
 
 class SettingsFragment : Fragment() {
-    private lateinit var sharedPreferences: SharedPreferences
 
     private lateinit var Factory: SettingsViewModelFactory
     private lateinit var viewModel: SettingsViewModel
@@ -30,7 +30,8 @@ class SettingsFragment : Fragment() {
             WeatherRepositoryImp.getInstance(
                 RemoteDataSourceImpl(),
                 WeatherLocalDataSource(requireContext()),
-                SettingsLocalDataSourceImpl(requireContext())
+                SettingsLocalDataSourceImpl(requireContext()),
+                AlertLocalDataSourceImpl(requireContext())
             )
         )
 
@@ -47,10 +48,6 @@ class SettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        sharedPreferences = requireContext().applicationContext.getSharedPreferences(
-            "PREFERENCES",
-            Context.MODE_PRIVATE
-        )
 
         val rgLanguages = view.findViewById<RadioGroup>(R.id.rgLanguages)
         val rgLocation = view.findViewById<RadioGroup>(R.id.rgLocation)
@@ -58,8 +55,8 @@ class SettingsFragment : Fragment() {
         val rgSpeed = view.findViewById<RadioGroup>(R.id.rgSpeed)
         val rgNotifications = view.findViewById<RadioGroup>(R.id.rgNotifications)
 
-        val lang = sharedPreferences.getString("language", "en").toString()
-        if (lang == "ar") {
+
+        if (viewModel.getLanguage() == "ar") {
             rgLanguages.check(R.id.rBtn2Languages)
         } else {
             rgLanguages.check(R.id.rBtnLanguages)
@@ -88,10 +85,16 @@ class SettingsFragment : Fragment() {
             rgLanguages.check(R.id.rBtn3Temperature)
         }
 
+        if (viewModel.getNotificationAccess() == "enable") {
+            rgLanguages.check(R.id.rBtnNotifications)
+        } else {
+            rgLanguages.check(R.id.rBtn2Notifications)
+        }
+
 
 
         rgLanguages.setOnCheckedChangeListener { _, checkedId ->
-            Log.i("TAG", "onViewCreated: enter language ")
+
             val lang = when (checkedId) {
                 R.id.rBtnLanguages -> "en"
                 R.id.rBtn2Languages -> "ar"
@@ -101,25 +104,22 @@ class SettingsFragment : Fragment() {
         }
 
         rgLocation.setOnCheckedChangeListener { _, checkedId ->
-            Log.i("TAG", "onViewCreated: enter location ")
-            // rgLocation.check(checkedId)
             val location = when (checkedId) {
                 R.id.rBtnLocation -> "gps"
                 else -> {
                     val navController = findNavController()
-                    val action = SettingsFragmentDirections.actionNavigationSettingsToNavigationMap()
+                    val action =
+                        SettingsFragmentDirections.actionNavigationSettingsToNavigationMap()
                     action.id = 1
                     navController.navigate(action)
-                             "map"
+                    "map"
                 }
-
             }
             viewModel.setLocation(location)
 
         }
 
         rgTemperature.setOnCheckedChangeListener { _, checkedId ->
-            //rgTemperature.check(checkedId)
 
             val temp = when (checkedId) {
                 R.id.rBtnTemperature -> "kelvin"
@@ -131,7 +131,6 @@ class SettingsFragment : Fragment() {
         }
 
         rgSpeed.setOnCheckedChangeListener { _, checkedId ->
-            // rgSpeed.check(checkedId)
 
             val speed = when (checkedId) {
                 R.id.rBtnSpeed -> "meter/sec"
@@ -141,11 +140,14 @@ class SettingsFragment : Fragment() {
             viewModel.setSpeed(speed)
         }
 
-
-//        rgNotifications.setOnCheckedChangeListener { _, checkedId ->
-//            viewModel.
-//
-//        }
+        rgNotifications.setOnCheckedChangeListener { _, checkedId ->
+            val notification = when (checkedId) {
+                R.id.rBtnNotifications -> "enable"
+                R.id.rBtn2Notifications -> "disable"
+                else -> "enable"
+            }
+            viewModel.setNotificationAccess(notification)
+        }
 
 
     }

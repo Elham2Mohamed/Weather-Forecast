@@ -1,34 +1,64 @@
 package com.example.weatherforecastapplication.model
 
+import com.example.weatherforecastapplication.db.AlertLocalDataSource
 import com.example.weatherforecastapplication.db.IWeatherLocalDataSource
 import com.example.weatherforecastapplication.db.SettingsLocalDataSource
 import com.example.weatherforecastapplication.network.RemoteDataSource
 import kotlinx.coroutines.flow.Flow
 
-class WeatherRepositoryImp(private val remoteDataSource: RemoteDataSource,
-                           private var localDataSource: IWeatherLocalDataSource,
-                           private var settingsLocalDataSource: SettingsLocalDataSource
-):WeatherRepository {
+class WeatherRepositoryImp(
+    private val remoteDataSource: RemoteDataSource,
+    private var localDataSource: IWeatherLocalDataSource,
+    private var settingsLocalDataSource: SettingsLocalDataSource,
+    private var alertLocalDataSource: AlertLocalDataSource
+) : WeatherRepository {
 
-    companion object{
-        private var instance:WeatherRepositoryImp?=null
-        fun getInstance(remoteDataSourceImpl: RemoteDataSource,
-                        localDataSource: IWeatherLocalDataSource,
-                        settingsLocalDataSource: SettingsLocalDataSource):WeatherRepositoryImp {
+    companion object {
+        private var instance: WeatherRepositoryImp? = null
+        fun getInstance(
+            remoteDataSourceImpl: RemoteDataSource,
+            localDataSource: IWeatherLocalDataSource,
+            settingsLocalDataSource: SettingsLocalDataSource,
+            alertLocalDataSource: AlertLocalDataSource
+        ): WeatherRepositoryImp {
 
-            return instance?: synchronized(this){
-                val temp =WeatherRepositoryImp(remoteDataSourceImpl,localDataSource,settingsLocalDataSource)
-                instance=temp
+            return instance ?: synchronized(this) {
+                val temp = WeatherRepositoryImp(
+                    remoteDataSourceImpl,
+                    localDataSource,
+                    settingsLocalDataSource,
+                    alertLocalDataSource
+                )
+                instance = temp
                 temp
             }
 
         }
     }
-    override suspend fun getCurrentWeather(lat: Double, lon: Double,lang:String,units :String, apiKey: String): Flow<WeatherData> {
-        return remoteDataSource.getCurrentWeather(lat, lon,lang,units, apiKey)
+
+    override suspend fun getAlertWeathers(): Flow<List<AlertWeather>>? {
+        return alertLocalDataSource.getAllAlertsWeathers()
     }
-    override suspend fun getCurrentWeather(lat: Double, lon: Double,lang:String, apiKey: String): Flow<WeatherData> {
-        return remoteDataSource.getCurrentWeather(lat, lon,lang, apiKey)
+
+    override suspend fun insertAlertWeather(alertWeather: AlertWeather) {
+        return alertLocalDataSource.insertAlertWeather(alertWeather)
+    }
+
+    override suspend fun deleteAlertWeather(alertWeather: AlertWeather) {
+       return alertLocalDataSource.deleteAlertWeather(alertWeather)
+    }
+
+    override suspend fun getAlertWeatherById(id: Long): AlertWeather? {
+        return alertLocalDataSource.getAlertWeatherById(id)
+    }
+
+    override suspend fun getCurrentWeather(
+        lat: Double,
+        lon: Double,
+        lang: String,
+        apiKey: String
+    ): Flow<WeatherData> {
+        return remoteDataSource.getCurrentWeather(lat, lon, lang, apiKey)
     }
 
     override suspend fun getFAVWeathers(): Flow<List<WeatherData>> {
@@ -40,8 +70,9 @@ class WeatherRepositoryImp(private val remoteDataSource: RemoteDataSource,
     }
 
     override suspend fun deleteWeather(weatherData: WeatherData) {
-       return localDataSource.deleteWeather(weatherData)
+        return localDataSource.deleteWeather(weatherData)
     }
+
     override suspend fun getWeatherById(id: Long): WeatherData? {
         return localDataSource.getWeatherById(id)
     }
@@ -51,7 +82,7 @@ class WeatherRepositoryImp(private val remoteDataSource: RemoteDataSource,
     }
 
     override fun setTemp(temp: String) {
-       settingsLocalDataSource.setTemp(temp)
+        settingsLocalDataSource.setTemp(temp)
     }
 
     override fun setUnit(unit: String) {
@@ -74,7 +105,7 @@ class WeatherRepositoryImp(private val remoteDataSource: RemoteDataSource,
         settingsLocalDataSource.setLatitude(lat)
     }
 
-    override fun getTemp():String {
+    override fun getTemp(): String {
         return settingsLocalDataSource.getTemp()
     }
 
@@ -100,6 +131,14 @@ class WeatherRepositoryImp(private val remoteDataSource: RemoteDataSource,
 
     override fun getLatitude(): Double {
         return settingsLocalDataSource.getLatitude()
+    }
+
+    override fun getNotificationAccess(): String {
+        return settingsLocalDataSource.getNotificationAccess()
+    }
+
+    override fun setNotificationAccess(access: String) {
+        settingsLocalDataSource.setNotificationAccess(access)
     }
 
 

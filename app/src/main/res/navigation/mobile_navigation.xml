@@ -37,11 +37,15 @@
             android:name="lat"
             app:argType="string"
             android:defaultValue="0.0" />
+        <argument
+            android:name="id"
+            app:argType="integer"
+            android:defaultValue="0" />
     </fragment>
 
     <fragment
         android:id="@+id/navigation_alerts"
-        android:name="com.example.weatherforecastapplication.alerts.AlertsFragment"
+        android:name="com.example.weatherforecastapplication.alerts.view.AlertsFragment"
         android:label="@string/title_alerts"
         tools:layout="@layout/fragment_alerts" >
         <action

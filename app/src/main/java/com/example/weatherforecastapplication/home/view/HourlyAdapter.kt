@@ -42,51 +42,30 @@ class HourlyAdapter(
                 holder.tvDate.text = part[0] + ":00 AM"
         }
         when {
-            context.speed == "meter/sec" && context.temp == "fahrenheit" -> {
-                if (context.sViewModel.getTemp() != "fahrenheit")
+            context.temp == "fahrenheit" -> {
+
+               // if (context.sViewModel.getTemp() != "fahrenheit")
                     holder.tvDegree.text =
                         context.convertKelvinToFahrenheit(current.main.temp).toInt()
                             .toString() + "°F"
-                else
-                    holder.tvDegree.text = (current.main.temp).toInt().toString() + "°F"
-
+//                else
+//                    holder.tvDegree.text = (current.main.temp).toInt().toString() + "°F"
             }
 
-            context.speed == "miles/hour" && context.temp == "celsius" -> {
-                if (context.sViewModel.getTemp() != "celsius") {
+            context.temp == "celsius" -> {
+               // if (context.sViewModel.getTemp() != "celsius") {
                     holder.tvDegree.text =
-                        context.convertKelvinToCelsius(current.main.temp).toInt().toString() + "°C"
-                } else
-                    holder.tvDegree.text = (current.main.temp).toInt().toString() + "°C"
-
-            }
-
-            context.speed == "miles/hour" && context.temp == "kelvin" -> {
-                holder.tvDegree.text = current.main.temp.toString() + "°K"
-
-            }
-
-            context.speed == "miles/hour" && context.temp == "fahrenheit" -> {
-                if (context.sViewModel.getTemp() != "fahrenheit")
-                    holder.tvDegree.text =
-                        context.convertKelvinToFahrenheit(current.main.temp).toInt()
-                            .toString() + "°F"
-                else
-                    holder.tvDegree.text = (current.main.temp).toInt().toString() + "°F"
-            }
-
-            (context.speed == "meter/sec" && context.temp == "celsius") -> {
-                if (context.sViewModel.getTemp() != "celsius")
-                    holder.tvDegree.text =
-                        context.convertKelvinToCelsius(current.main.temp).toInt().toString() + "°C"
-                else
-                    holder.tvDegree.text = (current.main.temp).toInt().toString() + "°C"
+                        context.convertKelvinToCelsius(current.main.temp).toInt()
+                            .toString() + "°C"
+//                } else
+//                    holder.tvDegree.text = (current.main.temp).toInt().toString() + "°C"
 
             }
 
             else -> {
                 holder.tvDegree.text = current.main.temp.toString() + "°K"
             }
+
         }
     }
 
