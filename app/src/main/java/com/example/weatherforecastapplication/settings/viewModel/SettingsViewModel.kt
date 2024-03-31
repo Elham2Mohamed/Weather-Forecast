@@ -20,7 +20,7 @@ class SettingsViewModel(private val repository: WeatherRepository) : ViewModel()
     val language: StateFlow<String> = _lang
 
     fun setLanguage(lang: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch{
             _lang.value = lang
             repository.setLanguage(lang)
         }

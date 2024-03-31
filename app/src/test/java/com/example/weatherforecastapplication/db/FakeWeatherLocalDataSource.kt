@@ -2,6 +2,7 @@ package com.example.weatherforecastapplication.db
 
 import com.example.weatherforecastapplication.model.WeatherData
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import java.lang.Exception
 
 
@@ -16,10 +17,16 @@ class FakeWeatherLocalDataSource(private val tasks:MutableList<WeatherData>?= mu
     }
 
     override suspend fun getAllWeathers(): Flow<List<WeatherData>> {
-        return tasks as Flow<List<WeatherData>>
+        return flow {
+            emit(tasks ?: emptyList())
+        }
     }
 
     override suspend fun getWeatherById(id: Long): WeatherData? {
-        return tasks?.get(id.toInt())
+        return if (tasks.isNullOrEmpty() || id >= tasks.size) {
+            null
+        } else {
+            tasks[id.toInt()]
+        }
     }
 }

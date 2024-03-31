@@ -19,6 +19,7 @@ import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -27,6 +28,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
@@ -50,6 +52,7 @@ import com.example.weatherforecastapplication.model.WeatherData
 import com.example.weatherforecastapplication.model.WeatherEntry
 import com.example.weatherforecastapplication.model.WeatherRepositoryImp
 import com.example.weatherforecastapplication.network.ApiState
+import com.example.weatherforecastapplication.settings.view.SettingsFragment
 import com.example.weatherforecastapplication.settings.viewModel.SettingsViewModel
 import com.example.weatherforecastapplication.settings.viewModel.SettingsViewModelFactory
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -67,7 +70,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.log
 
-
+private const val DOUBLE_CLICK_TIME_DELTA = 300
 const val REQUEST_LOCATION_CODE = 2005
 private const val PREFERENCES = "HOMEPREFERENCES"
 
@@ -104,14 +107,14 @@ class HomeFragment : Fragment() {
     lateinit var temp: String
     lateinit var date: LocalDate
     var isFirst = false
-
+    private var lastClickTime: Long = 0
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     private val LANGUAGE = "language"
     private val LONGITUDE = "longitude"
     private val LATITUDE = "latitude"
     private val DATE = "date"
-
+    var isFavMap = false
     private val binding get() = _binding!!
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -133,62 +136,80 @@ class HomeFragment : Fragment() {
             PREFERENCES, Context.MODE_PRIVATE
         )
         editor = sharedPreferences.edit()
+
+
+        view.setOnTouchListener(object : View.OnTouchListener {
+            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+                if (event?.action == MotionEvent.ACTION_DOWN) {
+                    val clickTime = System.currentTimeMillis()
+                    if (clickTime - lastClickTime < DOUBLE_CLICK_TIME_DELTA) {
+                        lastClickTime = 0
+                        recreateFragment()
+                    } else {
+                        lastClickTime = clickTime
+                    }
+                }
+                return true
+            }
+        })
+
+
         setupViews()
         setupViewModel()
         setupAdapters()
         checkStoredData()
 
         if (isConnectedToInternet()) {
-            if (isFirst == true &&  sharedPreferences.getString(LANGUAGE, "en")
-                    .toString() == sViewModel.getLanguage() && sharedPreferences.getString(
-                    LATITUDE,
-                    "0.0"
-                )!!.toDouble() == sViewModel.getLatitude() && sharedPreferences.getString(
-                    LONGITUDE,
-                    "0.0"
-                )!!.toDouble() == sViewModel.getLongitude() && sharedPreferences.getString(
-                    DATE,
-                    ""
-                ) == sViewModel.getDate()
-            ) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    Log.i(
-                        "TAG",
-                        "onViewCreated: lang : ${
-                            sharedPreferences.getString(LANGUAGE, "en").toString()
-                        } ,lat: ${
-                            sharedPreferences.getString(LATITUDE, "0.0")!!.toDouble()
-                        } ,lng : ${
-                            sharedPreferences.getString(LONGITUDE, "0.0")!!.toDouble()
-                        }, date ${sharedPreferences.getString(DATE, "")}}"
-                    )
-
-                    Log.i(
-                        "TAG",
-                        "onViewCreated: STRO location : ${sViewModel.getLocation()} ,lang : ${sViewModel.language} ,lat: ${sViewModel.getLatitude()} ,lng : ${sViewModel.getLongitude()}, temp :${sViewModel.getTemp()}, speed : ${sViewModel.getSpeed()}}"
-                    )
-
-                    val weather = fviewModel.getWeatherById((1).toLong())
-                    if (weather != null) {
-                        Log.i(
-                            "TAG",
-                            "onViewCreated: Room  lang : ${
-                                sharedPreferences.getString(LANGUAGE, "en").toString()
-                            } ,lat: ${weather.city!!.coord.lat} ,lng : ${weather.city.coord.lon}, date ${
-                                sharedPreferences.getString(
-                                    DATE,
-                                    ""
-                                )
-                            }}"
-                        )
-                        val image1 = (weather!!.list[0].weather[0].icon)
-                        image = image1
-                        handleWeather(weather, image1)
-
-                    } else
-                        Log.i("TAG", "onViewCreated:  room return null")
-                }
-            } else {
+//            if (sharedPreferences.getString(LANGUAGE, "en")
+//                    .toString() == sViewModel.getLanguage() && sharedPreferences.getString(
+//                    LATITUDE,
+//                    "0.0"
+//                )!!.toDouble() == sViewModel.getLatitude() && sharedPreferences.getString(
+//                    LONGITUDE,
+//                    "0.0"
+//                )!!.toDouble() == sViewModel.getLongitude() && sharedPreferences.getString(
+//                    DATE,
+//                    ""
+//                ) == sViewModel.getDate()
+//            ) {
+//                lifecycleScope.launch(Dispatchers.IO) {
+//                    Log.i(
+//                        "TAG",
+//                        "onViewCreated: lang : ${
+//                            sharedPreferences.getString(LANGUAGE, "en").toString()
+//                        } ,lat: ${
+//                            sharedPreferences.getString(LATITUDE, "0.0")!!.toDouble()
+//                        } ,lng : ${
+//                            sharedPreferences.getString(LONGITUDE, "0.0")!!.toDouble()
+//                        }, date ${sharedPreferences.getString(DATE, "")}}"
+//                    )
+//
+//                    Log.i(
+//                        "TAG",
+//                        "onViewCreated: STRO location : ${sViewModel.getLocation()} ,lang : ${sViewModel.language} ,lat: ${sViewModel.getLatitude()} ,lng : ${sViewModel.getLongitude()}, temp :${sViewModel.getTemp()}, speed : ${sViewModel.getSpeed()}}"
+//                    )
+//
+//                    val weather = fviewModel.getWeatherById((1).toLong())
+//                    if (weather != null) {
+//                        Log.i(
+//                            "TAG",
+//                            "onViewCreated: Room  lang : ${
+//                                sharedPreferences.getString(LANGUAGE, "en").toString()
+//                            } ,lat: ${weather.city!!.coord.lat} ,lng : ${weather.city.coord.lon}, date ${
+//                                sharedPreferences.getString(
+//                                    DATE,
+//                                    ""
+//                                )
+//                            }}"
+//                        )
+//                        val image1 = (weather!!.list[0].weather[0].icon)
+//                        image = image1
+//                        handleWeather(weather, image1)
+//
+//                    } else
+//                        Log.i("TAG", "onViewCreated:  room return null")
+//                }
+//            } else {
                 Log.i(
                     "TAG",
                     "onViewCreated: lang : ${
@@ -206,7 +227,7 @@ class HomeFragment : Fragment() {
                 var isConnectedToInternet = true
                 lifecycleScope.launch {
                     viewModel.currentWeather.collect { result ->
-                        isFirst=true
+                        isFirst = true
                         when (result) {
                             is ApiState.Loading -> {
                                 loader_view.visibility = View.VISIBLE
@@ -228,16 +249,23 @@ class HomeFragment : Fragment() {
 
                                     val weatherDataWithIdOne = weatherData.copy(id = 1)
                                     fviewModel.insertWeather(weatherDataWithIdOne)
-
-                                    editor.putString(LANGUAGE, sViewModel.getLanguage())
-                                    editor.putString(LATITUDE, sViewModel.getLatitude().toString())
-                                    editor.putString(
-                                        LONGITUDE,
-                                        sViewModel.getLongitude().toString()
-                                    )
-                                    editor.putString(DATE,dtTxt)
-                                    editor.apply()
-
+                                    if (isFavMap == false) {
+                                        Log.i(
+                                            "TAG",
+                                            "onViewCreated: not get from fav : ${sViewModel.getLocation()} ,lang : ${sViewModel.language} ,lat: ${sViewModel.getLatitude()} ,lng : ${sViewModel.getLongitude()}, temp :${sViewModel.getTemp()}, speed : ${sViewModel.getSpeed()},date : ${sViewModel.getDate()}}"
+                                        )
+                                        editor.putString(LANGUAGE, sViewModel.getLanguage())
+                                        editor.putString(
+                                            LATITUDE,
+                                            sViewModel.getLatitude().toString()
+                                        )
+                                        editor.putString(
+                                            LONGITUDE,
+                                            sViewModel.getLongitude().toString()
+                                        )
+                                        editor.putString(DATE, dtTxt)
+                                        editor.apply()
+                                    }
                                     handleWeather(weatherData, image1)
                                 } else {
                                     withContext(Dispatchers.Main) {
@@ -273,12 +301,21 @@ class HomeFragment : Fragment() {
 
                         }
                     }
-                }
+//                }
                 getFreshLocation()
             }
         } else {
             showInternetConnectionDialog()
         }
+
+    }
+
+    private fun recreateFragment() {
+        val homeFragment = HomeFragment()
+        val transaction = (context as AppCompatActivity).supportFragmentManager.beginTransaction()
+        transaction.replace(R.id.nav_host_fragment_activity_main, homeFragment)
+        transaction.addToBackStack(null)
+        transaction.commit()
     }
 
 
@@ -527,7 +564,7 @@ class HomeFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun handleLocation(location: Location) {
 
-        var isFavMap = false
+
         arguments?.let { args ->
             if (args.containsKey("selectedLatLng") && args.containsKey("fav")) {
                 val selectedLatLng = args.getParcelable<LatLng>("selectedLatLng")
@@ -542,7 +579,7 @@ class HomeFragment : Fragment() {
 
                 }
             }
-
+//             arguments=null
         }
         if (isFavMap == false) {
             if (sViewModel.getLocation() == "gps") {

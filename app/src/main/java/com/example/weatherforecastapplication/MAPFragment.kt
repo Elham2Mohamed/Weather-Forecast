@@ -104,11 +104,13 @@ class MAPFragment : Fragment(), OnMapReadyCallback {
         gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 5f))
     }
 
+    @SuppressLint("LogNotTimber")
     private fun navigateToHomeFragment(selectedLatLng: LatLng) {
 
         if(selectedLatLng != null){
             lifecycleScope.launch (Dispatchers.IO){
                 if(arguments?.getInt("id") == 1){
+                    Log.i("TAG", "MapFragment: NavigationMapToNavigationHome")
                     withContext(Dispatchers.Main) {
                         val navController = findNavController()
                         val action = MAPFragmentDirections.actionNavigationMapToNavigationHome()
@@ -119,6 +121,7 @@ class MAPFragment : Fragment(), OnMapReadyCallback {
                     }
                 }
                else if(arguments?.getInt("id") == 2){
+                    Log.i("TAG", "MapFragment: NavigationMapToNavigationFavorite")
 
                     withContext(Dispatchers.Main) {
                         val navController = findNavController()
@@ -130,6 +133,7 @@ class MAPFragment : Fragment(), OnMapReadyCallback {
                     }
                 }
                 else if(arguments?.getInt("id") == 3){
+                    Log.i("TAG", "MapFragment: NavigationMapToNavigationAlerts")
 
                     withContext(Dispatchers.Main) {
                         val navController = findNavController()

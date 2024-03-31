@@ -5,10 +5,16 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.mymvvmapplication.favproduct.viewmodel.FAVWeatherViewModel
 import com.example.testing_day1.data.source.FakeRepository
 import com.example.weatherforecastapplication.MainCoroutinRule
+import com.example.weatherforecastapplication.model.AlertWeather
 import com.example.weatherforecastapplication.model.RemoteDataSourceImpl
 import com.example.weatherforecastapplication.model.WeatherData
 import junit.framework.TestCase
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNull
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
 import org.junit.Before
@@ -31,7 +37,7 @@ class FAVWeatherViewModelTest {
     val weather3=WeatherData(2," ",0,0, emptyList(),null)
     val weather4=WeatherData(3," ",0,0, emptyList(),null)
 
-    val weathers= listOf<WeatherData>(weather1,weather2,weather3)
+    val weathers= listOf<WeatherData>()
 
 
     lateinit var viewModel:FAVWeatherViewModel
@@ -43,46 +49,64 @@ class FAVWeatherViewModelTest {
     }
 
     @Test
-    fun deleteWeather_newWeatherRemoved() {
-        // Given create object of ViewModel
-        // When call deleteWeather()
+     fun deleteWeather_newWeatherRemoved() {
+
         runBlocking {
             viewModel.insertWeather(weather1)
+        }
+        runBlocking {
             viewModel.deleteWeather(weather1)
         }
+        val result =runBlocking {
+            viewModel.getWeatherById(0)
+        }
+        assertNull(result)
 
-        // Then assert if new weather is removed
-        MatcherAssert.assertThat(viewModel.weathres.value, CoreMatchers.nullValue())
     }
 
     @Test
     fun insertWeather_newWeatherUpdated() {
-        // Given create object of ViewModel
-        // When call insertWeather()
+
         runBlocking {
             viewModel.insertWeather(weather1)
         }
 
-        // Then assert if new weather is in the list
+
         runBlocking {
             val result = viewModel.getWeatherById(0)
             MatcherAssert.assertThat(result, CoreMatchers.notNullValue())
             MatcherAssert.assertThat(result, CoreMatchers.equalTo(weather1))
         }
     }
-
+    @ExperimentalCoroutinesApi
     @Test
-    fun getLocalWeathers_returnWeathersEqualNull() {
-        // Given create object of ViewModel and insert multiple weather data
-        // When retrieve the list of weather =null
-        val result = runBlocking {
-            viewModel.weathres.value
+    fun getAllWeathers_emptyListOfWeather() = runBlockingTest {
+
+        var result =viewModel.weathres.value?.toList()
+        val test = emptyList<WeatherData>()
+        TestCase.assertEquals(test, result)
+    }
+    @ExperimentalCoroutinesApi
+    @Test
+    fun getAllWeathers_returnListOfWeather()  {
+        runBlocking {
+            viewModel.insertWeather(weather2)
+            viewModel.insertWeather(weather3)
         }
 
-        // Then assert if the retrieved list matches the expected list
-        MatcherAssert.assertThat(result, CoreMatchers.nullValue())
+        val result =  runBlocking { viewModel.weathres.value}
+
+
+        assertEquals(listOf(weather2, weather3), result)
     }
 
-
+    @Test
+    fun getWeatherByIdEqualZero()=runBlockingTest{
+        runBlocking {
+            viewModel.insertWeather(weather1)
+        }
+        val result=runBlocking {viewModel.getWeatherById(0)}
+        assertEquals(weather1, result)
+    }
 
 }

@@ -42,8 +42,7 @@ class MainActivity : AppCompatActivity() {
             WeatherRepositoryImp.getInstance(
                 RemoteDataSourceImpl(),
                 WeatherLocalDataSource(this),
-                SettingsLocalDataSourceImpl(this)
-                ,AlertLocalDataSourceImpl(this)
+                SettingsLocalDataSourceImpl(this), AlertLocalDataSourceImpl(this)
             )
         )
 
@@ -54,22 +53,22 @@ class MainActivity : AppCompatActivity() {
             val selectedLatLng = intent.getParcelableExtra<LatLng>("selectedLatLng")
             val id = intent.getStringExtra("id")
             if (id != null) {
-                if (id == "map") {
-                    if (intent.getStringExtra("from") == "fav") {
-                        val homeFragment = HomeFragment().apply {
-                            arguments = Bundle().apply {
-                                putParcelable("selectedLatLng", selectedLatLng)
-                                putString("fav", "fav")
-                            }
+                if (id == "map" && intent.getStringExtra("from") == "fav") {
+                    Log.i("TAG", "main activity : Navigation FAV To Navigation HOME ${selectedLatLng!!.longitude}, ${selectedLatLng.latitude}")
+                    val homeFragment = HomeFragment().apply {
+                        arguments = Bundle().apply {
+                            putParcelable("selectedLatLng", selectedLatLng)
+                            putString("fav", "fav")
                         }
-                        supportFragmentManager.beginTransaction()
-                            .replace(R.id.nav_host_fragment_activity_main, homeFragment)
-                            .addToBackStack(null)
-                            .commit()
                     }
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.nav_host_fragment_activity_main, homeFragment)
+                        .addToBackStack(null)
+                        .commit()
                 }
             }
         }
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

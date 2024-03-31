@@ -39,7 +39,6 @@ import com.example.weatherforecastapplication.settings.viewModel.SettingsViewMod
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 @Suppress("UNREACHABLE_CODE")
 class FavoriteFragment : Fragment(), FavOnClickListener {

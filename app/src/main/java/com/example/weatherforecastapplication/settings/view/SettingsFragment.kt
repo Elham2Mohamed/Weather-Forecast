@@ -2,6 +2,7 @@ package com.example.weatherforecastapplication.settings.view
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -20,10 +21,17 @@ import com.example.weatherforecastapplication.model.WeatherRepositoryImp
 import com.example.weatherforecastapplication.settings.viewModel.SettingsViewModel
 import com.example.weatherforecastapplication.settings.viewModel.SettingsViewModelFactory
 
-class SettingsFragment : Fragment() {
+private const val PREFERENCES = "PREFERENCES"
 
+class SettingsFragment : Fragment() {
+    private val LANGUAGE="language"
+    private val SPEED="speed"
+    private val LOCATION="location"
+    private val TEMP="temp"
+    private val NOTIFICATION="notification"
     private lateinit var Factory: SettingsViewModelFactory
     private lateinit var viewModel: SettingsViewModel
+    private lateinit var sharedPreferences: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Factory = SettingsViewModelFactory(
@@ -48,6 +56,9 @@ class SettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        sharedPreferences = requireContext().getSharedPreferences(
+            PREFERENCES, Context.MODE_PRIVATE
+        )
 
         val rgLanguages = view.findViewById<RadioGroup>(R.id.rgLanguages)
         val rgLocation = view.findViewById<RadioGroup>(R.id.rgLocation)
@@ -55,42 +66,17 @@ class SettingsFragment : Fragment() {
         val rgSpeed = view.findViewById<RadioGroup>(R.id.rgSpeed)
         val rgNotifications = view.findViewById<RadioGroup>(R.id.rgNotifications)
 
-
-        if (viewModel.getLanguage() == "ar") {
-            rgLanguages.check(R.id.rBtn2Languages)
-        } else {
-            rgLanguages.check(R.id.rBtnLanguages)
-        }
-
-
-        if (viewModel.getLocation() == "gps") {
-            rgLanguages.check(R.id.rBtnLocation)
-        } else {
-            rgLanguages.check(R.id.rBtn2Location)
-        }
-
-
-        if (viewModel.getSpeed() == "meter/sec") {
-            rgLanguages.check(R.id.rBtnSpeed)
-        } else {
-            rgLanguages.check(R.id.rBtn2Speed)
-        }
-
-
-        if (viewModel.getTemp() == "kelvin") {
-            rgLanguages.check(R.id.rBtnTemperature)
-        } else if (viewModel.getTemp() == "celsius") {
-            rgLanguages.check(R.id.rBtn2Temperature)
-        } else {
-            rgLanguages.check(R.id.rBtn3Temperature)
-        }
-
-        if (viewModel.getNotificationAccess() == "enable") {
-            rgLanguages.check(R.id.rBtnNotifications)
-        } else {
-            rgLanguages.check(R.id.rBtn2Notifications)
-        }
-
+        rgLanguages.check(if (sharedPreferences.getString(LANGUAGE, "en") == "ar") R.id.rBtn2Languages else R.id.rBtnLanguages)
+        rgLocation.check(if (sharedPreferences.getString(LOCATION, "gps") == "gps") R.id.rBtnLocation else R.id.rBtn2Location)
+        rgSpeed.check(if (sharedPreferences.getString(SPEED, "meter/sec") == "meter/sec") R.id.rBtnSpeed else R.id.rBtn2Speed)
+        rgTemperature.check(
+            when (sharedPreferences.getString(TEMP, "kelvin")) {
+                "celsius" -> R.id.rBtn2Temperature
+                "fahrenheit" -> R.id.rBtn3Temperature
+                else -> R.id.rBtnTemperature
+            }
+        )
+        rgNotifications.check(if (sharedPreferences.getString(NOTIFICATION, "enable") == "enable") R.id.rBtnNotifications else R.id.rBtn2Notifications)
 
 
         rgLanguages.setOnCheckedChangeListener { _, checkedId ->
@@ -150,6 +136,12 @@ class SettingsFragment : Fragment() {
         }
 
 
+    }
+    private fun isConnectedToInternet(): Boolean {
+        val connectivityManager =
+            requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isConnected
     }
 
 }

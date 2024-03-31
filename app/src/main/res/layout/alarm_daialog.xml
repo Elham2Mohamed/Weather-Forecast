@@ -24,19 +24,6 @@
             android:orientation="horizontal"
             android:padding="10dp">
 
-            <TextView
-                android:id="@+id/textView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:layout_marginEnd="148dp"
-                android:text="@string/weather_forecast"
-                android:textColor="@color/black"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
             <!--            <Button-->
 <!--                android:id="@+id/btnOk"-->
 <!--                android:layout_width="wrap_content"-->
@@ -53,9 +40,22 @@
 
 
             <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="148dp"
+                android:text="@string/weather_forecast"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
                 android:id="@+id/tvDesc"
-                android:layout_width="0dp"
-                android:layout_height="23dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:textColor="@color/black"
                 android:textSize="20sp"
                 app:layout_constraintBottom_toTopOf="@+id/btnOk"
@@ -71,7 +71,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="20dp"
-                android:backgroundTint="@color/primary_color_dark"
+                android:backgroundTint="@color/secondary_color_dark"
                 android:gravity="center"
                 android:text="@string/ok"
                 android:textColor="@color/white"

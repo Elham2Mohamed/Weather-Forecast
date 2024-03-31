@@ -5,14 +5,17 @@ import com.example.weatherforecastapplication.model.RemoteDataSourceImpl
 import com.example.weatherforecastapplication.model.WeatherData
 import com.example.weatherforecastapplication.model.WeatherRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class FakeRepository(private val remoteDataSource: RemoteDataSourceImpl,
                      private var weatherDao: MutableList<WeatherData>,
                      private var settingsDao: List<WeatherData>,
                      private var alertWeatherDao: MutableList<AlertWeather>
 ): WeatherRepository {
-    override suspend fun getAlertWeathers(): Flow<List<AlertWeather>>? {
-        return null
+    override suspend fun getAlertWeathers(): Flow<List<AlertWeather>> {
+        return flow {
+            emit(alertWeatherDao ?: emptyList())
+        }
     }
 
     override suspend fun insertAlertWeather(alertWeather: AlertWeather) {
@@ -27,7 +30,11 @@ class FakeRepository(private val remoteDataSource: RemoteDataSourceImpl,
     }
 
     override suspend fun getAlertWeatherById(id: Long): AlertWeather? {
-        return alertWeatherDao.get(id.toInt())
+        return if (alertWeatherDao.isNullOrEmpty() || id >= alertWeatherDao.size) {
+            null
+        } else {
+            alertWeatherDao[id.toInt()]
+        }
     }
 
     override suspend fun getCurrentWeather(
@@ -40,7 +47,9 @@ class FakeRepository(private val remoteDataSource: RemoteDataSourceImpl,
     }
 
     override suspend fun getFAVWeathers(): Flow<List<WeatherData>>? {
-        return null
+        return flow {
+            emit(weatherDao ?: emptyList())
+        }
     }
 
     override suspend fun insertWeather(weatherData: WeatherData) {
@@ -54,7 +63,12 @@ class FakeRepository(private val remoteDataSource: RemoteDataSourceImpl,
         }}
 
     override suspend fun getWeatherById(id: Long): WeatherData? {
-        return weatherDao.get(id.toInt())
+        return if (weatherDao.isNullOrEmpty() || id >= weatherDao.size) {
+            null
+        } else {
+            weatherDao[id.toInt()]
+        }
+        //return weatherDao.get(id.toInt())
     }
 
     override fun setLanguage(lang: String) {

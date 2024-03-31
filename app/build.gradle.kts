@@ -108,6 +108,12 @@ dependencies {
     testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.2")
     androidTestImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.2")
 
+    //animations
+//    implementation ("androidx.mediarouter:mediarouter:1.7.0")
+//    implementation ("com.android.support:support-annotations:28.0.0")
+//    implementation ("com.android.car.ui:car-ui-lib:2.6.0")
+    implementation ("com.airbnb.android:lottie:6.0.0")
+
 //Room
     implementation("androidx.room:room-ktx:2.6.1")
     implementation("androidx.room:room-runtime:2.6.1")

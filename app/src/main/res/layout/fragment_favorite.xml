@@ -7,6 +7,24 @@
     android:background="?attr/colorPrimary"
     tools:context=".favorite.view.FavoriteFragment">
 
+
+<!--    <com.airbnb.lottie.LottieAnimationView-->
+<!--        android:id="@+id/animationView"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:scaleType="fitCenter"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintHorizontal_bias="0.0"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintVertical_bias="0.0"-->
+<!--        app:lottie_autoPlay="true"-->
+<!--        app:lottie_loop="true"-->
+<!--        app:lottie_rawRes="@raw/animation1711870052389"-->
+<!--        app:lottie_url="REPLACE_JSON_URL"-->
+<!--        tools:ignore="MissingClass" />-->
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_item"
         android:layout_width="match_parent"

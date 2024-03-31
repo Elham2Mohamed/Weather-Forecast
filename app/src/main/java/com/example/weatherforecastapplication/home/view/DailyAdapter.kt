@@ -52,21 +52,15 @@ class DailyAdapter(
         when {
             context.temp == "fahrenheit" -> {
 
-               // if (context.sViewModel.getTemp() != "fahrenheit")
-                    holder.tvDegree.text =
+               holder.tvDegree.text =
                         context.convertKelvinToFahrenheit(current.main.temp).toInt()
                             .toString() + "°F"
-//                else
-//                    holder.tvDegree.text = (current.main.temp).toInt().toString() + "°F"
-            }
+         }
 
             context.temp == "celsius" -> {
-                //if (context.sViewModel.getTemp() != "celsius") {
                     holder.tvDegree.text =
                         context.convertKelvinToCelsius(current.main.temp).toInt()
                             .toString() + "°C"
-//                } else
-//                    holder.tvDegree.text = (current.main.temp).toInt().toString() + "°C"
 
             }
 

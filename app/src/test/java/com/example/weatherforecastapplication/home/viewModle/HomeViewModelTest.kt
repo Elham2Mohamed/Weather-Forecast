@@ -42,16 +42,13 @@ class HomeViewModelTest {
 
     @Test
     fun `getCurrentWeather without units`() {
-        // Given
+
         val lat = 31.0
         val lon = 35.78
         val lang = "en"
         val apiKey = "39b555dfd3fff6499b8c963689da8e9c"
 
-        // When
         viewModel.getCurrentWeather(lat, lon, lang, apiKey)
-
-        // Then
         assertNotNull(viewModel.currentWeather.value)
 
     }

@@ -27,50 +27,43 @@ class SettingsLocalDataSourceImpl  (var context: Context):SettingsLocalDataSourc
         }
     }
     override fun setLanguage(lang:String){
-//        editor.remove(LANGUAGE)
-//        editor.apply()
+
         editor.putString(LANGUAGE, lang)
         editor.apply()
     }
 
     override fun setTemp(temp: String) {
-//        editor.remove(TEMP)
-//        editor.apply()
+
         editor.putString(TEMP, temp)
         editor.apply()
     }
 
     override fun setDate(date: String) {
-//        editor.remove(UNIT)
-//        editor.apply()
+
         editor.putString(DATE, date)
         editor.apply()
     }
 
     override fun setSpeed(speed: String) {
-//        editor.remove(SPEED)
-//        editor.apply()
+
         editor.putString(SPEED, speed)
         editor.apply()
     }
 
     override fun setLocation(location: String) {
-//        editor.remove(LOCATION)
-//        editor.apply()
+
         editor.putString(LOCATION, location)
         editor.apply()
     }
 
     override fun setLongitude(lng: Double) {
-//        editor.remove(LONGITUDE)
-//        editor.apply()
+
         editor.putString(LONGITUDE, lng.toString())
         editor.apply()
     }
 
     override fun setLatitude(lat: Double) {
-//        editor.remove(LATITUDE)
-//        editor.apply()
+
         editor.putString(LATITUDE, lat.toString())
         editor.apply()
     }

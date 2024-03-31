@@ -35,6 +35,7 @@ class FAVWeatherViewModel (private val repo :WeatherRepository):ViewModel() {
     fun insertWeather(weather: WeatherData){
         viewModelScope.launch (Dispatchers.IO){
             repo.insertWeather(weather)
+
         }
     }
     suspend fun getWeatherById(id: Long): WeatherData? {

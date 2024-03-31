@@ -31,117 +31,120 @@ import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-private const val NOTIFICATION_PERM=1
-open class Worker(context: Context, params:WorkerParameters):Worker(context,params){
-    private  val BASE_URL = "https://api.openweathermap.org/data/2.5/"
+private const val NOTIFICATION_PERM = 1
+
+open class Worker(context: Context, params: WorkerParameters) : Worker(context, params) {
+    private val BASE_URL = "https://api.openweathermap.org/data/2.5/"
     lateinit var dialog: Dialog
-    lateinit var tvDesc:TextView
+    lateinit var tvDesc: TextView
+    lateinit var lang: String
+
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("LogNotTimber")
     override fun doWork(): Result {
         Log.i("TAG", "doWork: enter1 ")
 
-        val lat=inputData.getDouble("lat",0.0)
-        val log=inputData.getDouble("log",0.0)
-        val lang=inputData.getString("lang")
-        val type=inputData.getString("type")
-        val date=inputData.getString("date")
-        val city=inputData.getString("city")
+        val lat = inputData.getDouble("lat", 0.0)
+        val log = inputData.getDouble("log", 0.0)
+        lang = inputData.getString("lang").toString()
+        val type = inputData.getString("type")
+        val date = inputData.getString("date")
+        val city = inputData.getString("city")
+        val id = inputData.getInt("id", 0)
 
-        val access=inputData.getString("access")
-        Log.i("TAG", "doWork: lat $lat ,log $log ,lang $lang ,type $type ")
+        val access = inputData.getString("access")
+        Log.i("TAG", "doWork: lat $lat ,log $log ,lang $lang ,type $type , iD :$id")
 
-         val retrofit=Retrofit.Builder().addConverterFactory(GsonConverterFactory.create()).
-         baseUrl(BASE_URL)
-         .build()
+        val retrofit =
+            Retrofit.Builder().addConverterFactory(GsonConverterFactory.create()).baseUrl(BASE_URL)
+                .build()
 
-        val api=retrofit.create(WeatherService::class.java)
+        val api = retrofit.create(WeatherService::class.java)
 
-        var response:WeatherData?=null
+        var response: WeatherData? = null
 
         runBlocking {
             response = lang?.let {
                 api.getCurrentWeatherWithoutUints(
-                    lat = lat, lon = log, lang = it,"39b555dfd3fff6499b8c963689da8e9c"
+                    lat = lat, lon = log, lang = it, "39b555dfd3fff6499b8c963689da8e9c"
                 )
             }
         }
 
-        if(response!=null){
+        if (response != null) {
             Log.i("TAG", "doWork: enter2 ")
 
-            if(type=="Notifications"){
+            if (type == "Notifications") {
 
-                   val notificationManager=applicationContext.getSystemService(NotificationManager::class.java)as NotificationManager
-                   if(notificationManager.areNotificationsEnabled()){
-                       Log.i("TAG", "doWork: enter3 ")
-                       val outputData = workDataOf(
-                           "city" to city,
-                           "date" to date,
-                           "lat" to lat,
-                           "lon" to log,
-                           "type" to type
-                       )
-                       Log.i("TAG", "doWork:notAlert $outputData")
-                       response!!.city?.name?.let {
-                           createNotification(
-                               applicationContext,
-                               response!!.list[0].weather[0].description, it
-                           )
-                       }
-                       return Result.success(outputData)
-
-                   }
-                   else{
-                       Log.i("TAG", "doWork: enter 4")
-
-                       return Result.failure()
-                   }
-
-           }
-            else{
-                Log.i("TAG", "doWork: enter 5")
-
-                if(access=="enable"){
-                    Log.i("TAG", "doWork: enter 6")
-
-                    runBlocking {
-                         withContext(Dispatchers.Main){
-                             val icon = response!!.list[0].weather[0].icon
-                             val city=response!!.city?.name
-                             val desc = response!!.list[0].weather[0].description
-                             city?.let {
-                                 showAlertDialog(applicationContext.applicationContext,desc,
-                                     it,icon)
-                             }
-
-
-                         }
-                     }
+                val notificationManager =
+                    applicationContext.getSystemService(NotificationManager::class.java) as NotificationManager
+                if (notificationManager.areNotificationsEnabled()) {
+                    Log.i("TAG", "doWork: enter3 ")
                     val outputData = workDataOf(
                         "city" to city,
                         "date" to date,
                         "lat" to lat,
                         "lon" to log,
-                        "type" to type
+                        "type" to type,
+                        "id" to id
+                    )
+                    Log.i("TAG", "doWork:notAlert $outputData")
+                    response!!.city?.name?.let {
+                        createNotification(
+                            applicationContext,
+                            response!!.list[0].weather[0].description, it
+                        )
+                    }
+                    return Result.success(outputData)
 
+                } else {
+                    Log.i("TAG", "doWork: enter 4")
+
+                    return Result.failure()
+                }
+
+            } else {
+                Log.i("TAG", "doWork: enter 5")
+
+                if (access == "enable") {
+                    Log.i("TAG", "doWork: enter 6")
+
+                    runBlocking {
+                        withContext(Dispatchers.Main) {
+                            val icon = response!!.list[0].weather[0].icon
+                            val city = response!!.city?.name
+                            val desc = response!!.list[0].weather[0].description
+                            city?.let {
+                                showAlertDialog(
+                                    applicationContext.applicationContext, desc,
+                                    it, icon
+                                )
+                            }
+
+
+                        }
+                    }
+                    val outputData = workDataOf(
+                        "city" to city,
+                        "date" to date,
+                        "lat" to lat,
+                        "lon" to log,
+                        "type" to type,
+                        "id" to id
                     )
 
                     return Result.success(outputData)
 
-                }
-               else{
+                } else {
                     Log.i("TAG", "doWork: enter 7")
 
                     return Result.failure()
-               }
+                }
 
 
             }
 
-        }
-        else
-        {
+        } else {
             showInternetConnectionDialog()
             Log.i("TAG", "doWork: enter 8")
 
@@ -152,7 +155,7 @@ open class Worker(context: Context, params:WorkerParameters):Worker(context,para
     }
 
     private fun showInternetConnectionDialog() {
-        val  dialog = Dialog(applicationContext)
+        val dialog = Dialog(applicationContext)
         dialog.setContentView(R.layout.network_daialog)
         val btnOK = dialog.findViewById<Button>(R.id.btnOk)
         btnOK.setOnClickListener {
@@ -167,18 +170,21 @@ open class Worker(context: Context, params:WorkerParameters):Worker(context,para
         val inflater = LayoutInflater.from(context)
         val view = inflater.inflate(R.layout.alarm_daialog, null)
 
-        // Initialize views from the custom layout
         val tvDesc = view.findViewById<TextView>(R.id.tvDesc)
         val imgIcon = view.findViewById<ImageView>(R.id.icon)
         val btnOK = view.findViewById<Button>(R.id.btnOk)
 
-        // Set text and image based on parameters
         val dCity = when (city) {
             "Mountain View" -> "Cairo"
             "ماونتن فيو" -> "القاهرة"
             else -> city
         }
-        tvDesc.text = " $desc, in $dCity"
+        tvDesc.text  = when (lang) {
+            "en" ->  "Current weather in $dCity \n $desc"
+            "ar" ->  "الطقس الحالي في $dCity \n  $desc"
+            else ->  "Current weather in $dCity \n $desc"
+        }
+
         imgIcon.setImageResource(getImage(icon))
         val dialog = AlertDialog.Builder(context).setView(view).create()
         // Set onClickListener for the OK button to dismiss the dialog

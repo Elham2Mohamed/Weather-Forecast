@@ -5,7 +5,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 class Converters {
-    // TypeConverter for List<WeatherEntry>
+
     @TypeConverter
     fun fromWeatherEntryList(value: List<WeatherEntry>?): String? {
         val gson = Gson()
@@ -18,7 +18,7 @@ class Converters {
         return Gson().fromJson(value, listType)
     }
 
-    // TypeConverter for City
+
     @TypeConverter
     fun fromCity(value: City?): String? {
         val gson = Gson()

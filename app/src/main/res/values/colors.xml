@@ -9,7 +9,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="primary_color_light">#FCC622</color>
     <color name="secondary_color_light">#51AFFA</color>
-    <color name="primary_color_dark">#4D3685</color>
+    <color name="primary_color_dark">?attr/colorPrimary</color>
     <color name="secondary_color_dark">#020C47</color>
     <color name="colorSecondaryVariant">?attr/colorSecondaryVariant</color>
     <color name="colorPrimary">?attr/colorPrimary</color>

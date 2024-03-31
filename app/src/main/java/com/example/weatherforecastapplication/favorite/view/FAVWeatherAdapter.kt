@@ -60,22 +60,17 @@ class FAVWeatherAdapter(
             when {
                 context.temp == "fahrenheit" -> {
 
-                   // if (context.sViewModel.getTemp() != "fahrenheit")
+
                         holder.degree.text =
                             context.convertKelvinToFahrenheit(current.list[0].main.temp).toInt()
                                 .toString() + "°F"
-//                    else
-//                        holder.degree.text = (current.list[0].main.temp).toInt().toString() + "°F"
-                }
+             }
 
                 context.temp == "celsius" -> {
-                    //if (context.sViewModel.getTemp() != "celsius") {
-                        holder.degree.text =
+                       holder.degree.text =
                             context.convertKelvinToCelsius(current.list[0].main.temp).toInt()
                                 .toString() + "°C"
-//                    } else
-//                        holder.degree.text = (current.list[0].main.temp).toInt().toString() + "°C"
-//
+
 
                 }
 

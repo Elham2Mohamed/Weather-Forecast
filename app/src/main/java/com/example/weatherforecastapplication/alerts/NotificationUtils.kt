@@ -23,6 +23,7 @@ fun createNotification(context: Context,desc:String,city:String) {
 
         notificationManager.createNotificationChannel(channel)
     }
+
     val builder= NotificationCompat.Builder(context, CHANNEL_ID)
         .setSmallIcon(R.drawable.notifications)
         .setContentTitle("Current weather in $city ")

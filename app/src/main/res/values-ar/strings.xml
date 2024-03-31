@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">الطقس</string>
-    <string name="title_home">الصفحه الرئيسيه</string>
-    <string name="title_favorite">الصفحه المفضله</string>
+    <string name="title_home">الرئيسيه</string>
+    <string name="title_favorite">المفضله</string>
     <string name="title_alerts">التنبيهات</string>
     <string name="title_settings">الاعدادات</string>
     <string name="location">الموقع</string>
@@ -15,10 +15,10 @@
     <string name="meter_sec">متر/الثانيه</string>
     <string name="miles_hour">ميل/ساعة</string>
     <string name="kelvin">كلفين</string>
-    <string name="celsius">سيليزيس</string>
+    <string name="celsius">درجة مئوية</string>
     <string name="fahrenheit">فيهرنهايت</string>
     <string name="enable">تفعيل</string>
-    <string name="temperature">الحرارة</string>
+    <string name="temperature">درجة الحرارة</string>
     <string name="notifications">الاشعارات</string>
     <string name="disable">الغاء</string>
     <string name="visibility">الرؤية</string>
@@ -26,6 +26,19 @@
     <string name="wind">الرياح</string>
     <string name="perssure">الضغط</string>
     <string name="humidity">الرطوبة</string>
-    <string name="cloud">السحب</string>
+    <string name="cloud">الغيوم</string>
     <string name="google_maps_api_key">AIzaSyBnwre378pcYLgQTK8EWBljfgvT_tzDHIo</string>
+    <string name="save">حفظ</string>
+    <string name="set_alert">تعيين تنبيه</string>
+    <string name="alert">تنبيه</string>
+    <string name="alarm">إنذار</string>
+    <string name="cancel">إلغاء</string>
+    <string name="weather_forecast">توقعات الطقس</string>
+    <string name="ok">موافق</string>
+    <string name="no_internet_connection">لا يوجد اتصال بالإنترنت</string>
+    <string name="please_check_your_internet_connection_and_try_again">يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى</string>
+    <string name="delete_this_meal_will_also_delete_its_data">هل أنت متأكد أنك تريد حذفه؟</string>
+    <string name="delete">حذف</string>
+    <string name="notification_access_required">مطلوب الوصول للإشعارات</string>
+    <string name="to_receive_weather_alerts_please_enable_notification_access_for_this_app">لتلقي تنبيهات الطقس، يرجى تمكين الوصول للإشعارات لهذا التطبيق</string>
 </resources>
