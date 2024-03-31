@@ -117,8 +117,7 @@ class FavoriteFragment : Fragment(), FavOnClickListener {
                             if (result.data.list.isNotEmpty()) {
                                 viewModel.insertWeather(result.data)
                                 x = false
-                            }
-                            else
+                            } else
                                 showInternetConnectionDialog()
                         }
                     }
@@ -157,9 +156,14 @@ class FavoriteFragment : Fragment(), FavOnClickListener {
         favRecyclerView.adapter = favAdapter
 
 
-        viewModel.weathres.observe(viewLifecycleOwner) { weatherList ->
+            viewModel.weathres.observe(viewLifecycleOwner) { weatherList ->
+                val filteredList = (mutableListOf<WeatherData>())
+                   weatherList.forEach{
+                       if(it.id != (1).toLong()){
+                           filteredList.add(it)
+                       }
+                   }
 
-            val filteredList = weatherList
             val updatedList = filteredList + viewModel.newFavoriteItems
             favAdapter.submitList(updatedList)
         }
@@ -209,7 +213,7 @@ class FavoriteFragment : Fragment(), FavOnClickListener {
     }
 
     private fun showInternetConnectionDialog() {
-        val  dialog = Dialog(requireContext())
+        val dialog = Dialog(requireContext())
         dialog.setContentView(R.layout.network_daialog)
         val btnOK = dialog.findViewById<Button>(R.id.btnOk)
         btnOK.setOnClickListener {

@@ -66,7 +66,7 @@ class FakeRepository(private val remoteDataSource: RemoteDataSourceImpl,
     }
 
 
-    override fun setUnit(unit: String) {
+    override fun setDate(unit: String) {
         TODO("Not yet implemented")
     }
 
@@ -94,7 +94,7 @@ class FakeRepository(private val remoteDataSource: RemoteDataSourceImpl,
         TODO("Not yet implemented")
     }
 
-    override fun getUnit(): String {
+    override fun getDate(): String {
         TODO("Not yet implemented")
     }
 

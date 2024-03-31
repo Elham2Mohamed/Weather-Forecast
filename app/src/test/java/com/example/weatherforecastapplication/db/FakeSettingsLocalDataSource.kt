@@ -10,7 +10,7 @@ class FakeSettingsLocalDataSource():SettingsLocalDataSource{
         TODO("Not yet implemented")
     }
 
-    override fun setUnit(unit: String) {
+    override fun setDate(unit: String) {
         TODO("Not yet implemented")
     }
 
@@ -38,7 +38,7 @@ class FakeSettingsLocalDataSource():SettingsLocalDataSource{
         TODO("Not yet implemented")
     }
 
-    override fun getUnit(): String {
+    override fun getDate(): String {
         TODO("Not yet implemented")
     }
 

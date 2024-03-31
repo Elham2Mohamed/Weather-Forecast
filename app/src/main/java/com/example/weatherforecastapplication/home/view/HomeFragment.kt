@@ -33,6 +33,7 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mymvvmapplication.favproduct.viewmodel.FAVWeatherViewModel
@@ -69,6 +70,7 @@ import kotlin.math.log
 
 const val REQUEST_LOCATION_CODE = 2005
 private const val PREFERENCES = "HOMEPREFERENCES"
+
 class HomeFragment : Fragment() {
     lateinit var image: String
     private lateinit var favFactory: FAVWeatherViewModelFactory
@@ -103,13 +105,12 @@ class HomeFragment : Fragment() {
     lateinit var date: LocalDate
     var isFirst = false
 
-   private  lateinit var sharedPreferences: SharedPreferences //=requireContext().getSharedPreferences(
-//        PREFERENCES,Context.MODE_PRIVATE)
-    private lateinit var editor: SharedPreferences.Editor //=sharedPreferences.edit()
-    private val LANGUAGE="language"
-    private val LONGITUDE="longitude"
-    private val LATITUDE="latitude"
-   private val DATE="date"
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var editor: SharedPreferences.Editor
+    private val LANGUAGE = "language"
+    private val LONGITUDE = "longitude"
+    private val LATITUDE = "latitude"
+    private val DATE = "date"
 
     private val binding get() = _binding!!
 
@@ -124,103 +125,158 @@ class HomeFragment : Fragment() {
         return root
     }
 
-    @SuppressLint("LogNotTimber")
+    @SuppressLint("LogNotTimber", "SuspiciousIndentation")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        sharedPreferences =requireContext().getSharedPreferences(
-        PREFERENCES,Context.MODE_PRIVATE)
-        editor=sharedPreferences.edit()
+        sharedPreferences = requireContext().getSharedPreferences(
+            PREFERENCES, Context.MODE_PRIVATE
+        )
+        editor = sharedPreferences.edit()
         setupViews()
         setupViewModel()
-//        Log.i(
-//            "TAG",
-//            "onViewCreated: location : ${sViewModel.getLocation()} ,lang : ${sViewModel.language} ,lat: ${sViewModel.getLatitude()} ,lng : ${sViewModel.getLongitude()}, temp :${sViewModel.getTemp()}, speed : ${sViewModel.getSpeed()}}"
-//        )
         setupAdapters()
         checkStoredData()
 
         if (isConnectedToInternet()) {
-            if(sharedPreferences.getString(LANGUAGE,"en").toString()==sViewModel.getLanguage()&&sharedPreferences.getString(LATITUDE,"0.0")!!.toDouble()==sViewModel.getLatitude()&&sharedPreferences.getString(LONGITUDE,"0.0")!!.toDouble()==sViewModel.getLongitude()&&sharedPreferences.getString(DATE,"")==sViewModel.getDate()){
+            if (isFirst == true &&  sharedPreferences.getString(LANGUAGE, "en")
+                    .toString() == sViewModel.getLanguage() && sharedPreferences.getString(
+                    LATITUDE,
+                    "0.0"
+                )!!.toDouble() == sViewModel.getLatitude() && sharedPreferences.getString(
+                    LONGITUDE,
+                    "0.0"
+                )!!.toDouble() == sViewModel.getLongitude() && sharedPreferences.getString(
+                    DATE,
+                    ""
+                ) == sViewModel.getDate()
+            ) {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    Log.i(
+                        "TAG",
+                        "onViewCreated: lang : ${
+                            sharedPreferences.getString(LANGUAGE, "en").toString()
+                        } ,lat: ${
+                            sharedPreferences.getString(LATITUDE, "0.0")!!.toDouble()
+                        } ,lng : ${
+                            sharedPreferences.getString(LONGITUDE, "0.0")!!.toDouble()
+                        }, date ${sharedPreferences.getString(DATE, "")}}"
+                    )
+
+                    Log.i(
+                        "TAG",
+                        "onViewCreated: STRO location : ${sViewModel.getLocation()} ,lang : ${sViewModel.language} ,lat: ${sViewModel.getLatitude()} ,lng : ${sViewModel.getLongitude()}, temp :${sViewModel.getTemp()}, speed : ${sViewModel.getSpeed()}}"
+                    )
+
+                    val weather = fviewModel.getWeatherById((1).toLong())
+                    if (weather != null) {
+                        Log.i(
+                            "TAG",
+                            "onViewCreated: Room  lang : ${
+                                sharedPreferences.getString(LANGUAGE, "en").toString()
+                            } ,lat: ${weather.city!!.coord.lat} ,lng : ${weather.city.coord.lon}, date ${
+                                sharedPreferences.getString(
+                                    DATE,
+                                    ""
+                                )
+                            }}"
+                        )
+                        val image1 = (weather!!.list[0].weather[0].icon)
+                        image = image1
+                        handleWeather(weather, image1)
+
+                    } else
+                        Log.i("TAG", "onViewCreated:  room return null")
+                }
+            } else {
                 Log.i(
                     "TAG",
-                    "onViewCreated: STRO location : ${sViewModel.getLocation()} ,lang : ${sViewModel.language} ,lat: ${sViewModel.getLatitude()} ,lng : ${sViewModel.getLongitude()}, temp :${sViewModel.getTemp()}, speed : ${sViewModel.getSpeed()}}"
-                )
-            }
-            else{
-                Log.i(
-                    "TAG",
-                    "onViewCreated: lang : ${sharedPreferences.getString(LANGUAGE,"en").toString()} ,lat: ${sharedPreferences.getString(LATITUDE,"0.0")!!.toDouble()} ,lng : ${sharedPreferences.getString(LONGITUDE,"0.0")!!.toDouble()}, date ${sharedPreferences.getString(DATE,"")}}"
+                    "onViewCreated: lang : ${
+                        sharedPreferences.getString(LANGUAGE, "en").toString()
+                    } ,lat: ${
+                        sharedPreferences.getString(LATITUDE, "0.0")!!.toDouble()
+                    } ,lng : ${
+                        sharedPreferences.getString(LONGITUDE, "0.0")!!.toDouble()
+                    }, date ${sharedPreferences.getString(DATE, "")}}"
                 )
                 Log.i(
                     "TAG",
                     "onViewCreated: API  location : ${sViewModel.getLocation()} ,lang : ${sViewModel.language} ,lat: ${sViewModel.getLatitude()} ,lng : ${sViewModel.getLongitude()}, temp :${sViewModel.getTemp()}, speed : ${sViewModel.getSpeed()},date : ${sViewModel.getDate()}}"
                 )
-            var isConnectedToInternet = true
-            lifecycleScope.launch {
-                viewModel.currentWeather.collect { result ->
-                    when (result) {
-                        is ApiState.Loading -> {
-                            loader_view.visibility = View.VISIBLE
-                            recyclerView1.visibility = View.GONE
-                            recyclerView2.visibility = View.GONE
-                        }
-
-                        is ApiState.Success -> {
-                            loader_view.visibility = View.GONE
-                            recyclerView1.visibility = View.VISIBLE
-                            recyclerView2.visibility = View.VISIBLE
-                            weatherData = result.data
-
-                            if (weatherData.list.isNotEmpty()) {
-                                val image1 = (weatherData.list[0].weather[0].icon)
-                                image = image1
-                                val dtTxt = weatherData.list[0].dt_txt
-                                val parts = dtTxt.split(" ")
-                                editor.putString(LANGUAGE, sViewModel.getLanguage())
-                                editor.putString(LATITUDE, sViewModel.getLatitude().toString())
-                                editor.putString(LONGITUDE, sViewModel.getLongitude().toString())
-                                editor.putString(DATE, parts[0])
-                                editor.apply()
-                                handleWeather(weatherData, image1)
-                            } else {
-                                withContext(Dispatchers.Main) {
-                                    if (isConnectedToInternet == true) {
-                                        runBlocking() {
-                                            isConnectedToInternet = false
-                                            showInternetConnectionDialog()
-
-                                        }
-                                    }
-                                    Log.i("TAG", "onViewCreated: Error no weatherData")
-                                }
-                            }
-                        }
-
-                        else -> {
-                            if (fviewModel.getWeatherById(1) != null) {
-                                weatherData = fviewModel.getWeatherById(1)!!
-                                val image1 = (weatherData.list[0].weather[0].icon)
-                                image = image1
-                                handleWeather(weatherData, image1)
-                            } else {
-                                withContext(Dispatchers.Main) {
-                                    showInternetConnectionDialog()
-                                }
-                                loader_view.visibility = View.GONE
+                var isConnectedToInternet = true
+                lifecycleScope.launch {
+                    viewModel.currentWeather.collect { result ->
+                        isFirst=true
+                        when (result) {
+                            is ApiState.Loading -> {
+                                loader_view.visibility = View.VISIBLE
                                 recyclerView1.visibility = View.GONE
                                 recyclerView2.visibility = View.GONE
-
-                                Log.i("TAG", "onViewCreated: Error")
                             }
-                        }
 
+                            is ApiState.Success -> {
+                                loader_view.visibility = View.GONE
+                                recyclerView1.visibility = View.VISIBLE
+                                recyclerView2.visibility = View.VISIBLE
+                                weatherData = result.data
+
+                                if (weatherData.list.isNotEmpty()) {
+                                    val image1 = (weatherData.list[0].weather[0].icon)
+                                    image = image1
+                                    val dtTxt = weatherData.list[0].dt_txt
+                                    val parts = dtTxt.split(" ")
+
+                                    val weatherDataWithIdOne = weatherData.copy(id = 1)
+                                    fviewModel.insertWeather(weatherDataWithIdOne)
+
+                                    editor.putString(LANGUAGE, sViewModel.getLanguage())
+                                    editor.putString(LATITUDE, sViewModel.getLatitude().toString())
+                                    editor.putString(
+                                        LONGITUDE,
+                                        sViewModel.getLongitude().toString()
+                                    )
+                                    editor.putString(DATE,dtTxt)
+                                    editor.apply()
+
+                                    handleWeather(weatherData, image1)
+                                } else {
+                                    withContext(Dispatchers.Main) {
+                                        if (isConnectedToInternet == true) {
+                                            runBlocking() {
+                                                isConnectedToInternet = false
+                                                showInternetConnectionDialog()
+
+                                            }
+                                        }
+                                        Log.i("TAG", "onViewCreated: Error no weatherData")
+                                    }
+                                }
+                            }
+
+                            else -> {
+                                if (fviewModel.getWeatherById(1) != null) {
+                                    weatherData = fviewModel.getWeatherById(1)!!
+                                    val image1 = (weatherData.list[0].weather[0].icon)
+                                    image = image1
+                                    handleWeather(weatherData, image1)
+                                } else {
+                                    withContext(Dispatchers.Main) {
+                                        showInternetConnectionDialog()
+                                    }
+                                    loader_view.visibility = View.GONE
+                                    recyclerView1.visibility = View.GONE
+                                    recyclerView2.visibility = View.GONE
+
+                                    Log.i("TAG", "onViewCreated: Error")
+                                }
+                            }
+
+                        }
                     }
                 }
+                getFreshLocation()
             }
-            getFreshLocation()}
-        }
-        else {
+        } else {
             showInternetConnectionDialog()
         }
     }
@@ -299,28 +355,33 @@ class HomeFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     @RequiresApi(Build.VERSION_CODES.O)
     private fun handleWeather(weatherData: WeatherData, image: String) {
+
+        weatherData ?: return
         val icon = getImage(image)
         icons.setImageResource(icon)
 
-        getHourlyWeather()
-        getDailyWeather()
-        tvcity.text = weatherData.city?.name ?: "cairo"
+        getHourlyWeather(weatherData)
+        getDailyWeather(weatherData)
+        lifecycleScope.launch {
 
-        if (weatherData.city?.name == "Mountain View")
-            tvcity.text = "Cairo"
-        else if (weatherData.city?.name == "ماونتن فيو")
-            tvcity.text = "القاهرة"
-        tvDesc.text = weatherData.list[0].weather[0].description
-        tvPressure.text = weatherData.list[0].main.pressure.toString() + " hpa"
-        tvHum.text = weatherData.list[0].main.humidity.toString() + " %"
-        tvCloud.text = weatherData.list[0].clouds.all.toString() + " %"
-        tvVisibility.text = weatherData.list[0].visibility.toString() + " m"
-        changeTime()
-        changeTempAndSpeed()
+            tvcity.text = weatherData.city?.name ?: "cairo"
+
+            if (weatherData.city?.name == "Mountain View")
+                tvcity.text = "Cairo"
+            else if (weatherData.city?.name == "ماونتن فيو")
+                tvcity.text = "القاهرة"
+            tvDesc.text = weatherData.list[0].weather[0].description
+            tvPressure.text = weatherData.list[0].main.pressure.toString() + " hpa"
+            tvHum.text = weatherData.list[0].main.humidity.toString() + " %"
+            tvCloud.text = weatherData.list[0].clouds.all.toString() + " %"
+            tvVisibility.text = weatherData.list[0].visibility.toString() + " m"
+        }
+        changeTime(weatherData)
+        changeTempAndSpeed(weatherData)
 
     }
 
-    private fun getDailyWeather() {
+    private fun getDailyWeather(weatherData: WeatherData) {
         val filteredList = mutableListOf<WeatherEntry>()
         var startIndex = 0
         while (startIndex < weatherData.list.size) {
@@ -328,24 +389,27 @@ class HomeFragment : Fragment() {
             filteredList.addAll(weatherData.list.subList(startIndex, endIndex))
             startIndex += 8
         }
-        dailyAdapter.submitList(filteredList)
-
+        lifecycleScope.launch(Dispatchers.Main) {
+            dailyAdapter.submitList(filteredList)
+        }
     }
 
-    private fun getHourlyWeather() {
+    private fun getHourlyWeather(weatherData: WeatherData) {
         val data = weatherData.list.subList(0, 8)
-        hourlyAdapter.submitList(data)
+        lifecycleScope.launch(Dispatchers.Main) {
+            hourlyAdapter.submitList(data)
+        }
 
     }
 
     @SuppressLint("SetTextI18n")
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun changeTime() {
+    private fun changeTime(weatherData: WeatherData) {
 
         val dtTxt = weatherData.list[0].dt_txt
         val parts = dtTxt.split(" ")
         val part = parts[1].split(":")
-        sViewModel.setDate(parts[0])
+        sViewModel.setDate(dtTxt)
 
         val dateString = parts[0]
         val formatter = if (language == "ar") {
@@ -367,46 +431,50 @@ class HomeFragment : Fragment() {
             else
                 "$dayOfWeek       ${part[0]}:00 AM\n${parts[0]}"
         }
-        tvDate.text = formattedDate
+        lifecycleScope.launch {
+            tvDate.text = formattedDate
+        }
 
     }
 
 
     @SuppressLint("SetTextI18n")
-    private fun changeTempAndSpeed() {
-        when {
-            speed == "miles/hour" -> {
-                val result = (weatherData.list[0].wind.speed * 2.24)
-                tvWind.text = "${String.format("%.2f", result).toDouble()}  m/h"
+    private fun changeTempAndSpeed(weatherData: WeatherData) {
+        lifecycleScope.launch {
+            when {
+                speed == "miles/hour" -> {
+                    val result = (weatherData.list[0].wind.speed * 2.24)
+                    tvWind.text = "${String.format("%.2f", result).toDouble()}  m/h"
+                }
+
+                else -> {
+                    tvWind.text = ((weatherData.list[0].wind.speed)).toInt().toString() + " m/s"
+                }
             }
 
-            else -> {
-                tvWind.text = ((weatherData.list[0].wind.speed)).toInt().toString() + " m/s"
-            }
-        }
+            when {
+                temp == "fahrenheit" -> {
+                    tvDegree.text = convertKelvinToFahrenheit(weatherData.list[0].main.temp).toInt()
+                        .toString() + "°F"
+                    tvTemp.text = convertKelvinToFahrenheit(weatherData.list[0].main.temp).toInt()
+                        .toString() + "°F"
 
-        when {
-            temp == "fahrenheit" -> {
-                tvDegree.text = convertKelvinToFahrenheit(weatherData.list[0].main.temp).toInt()
-                    .toString() + "°F"
-                tvTemp.text = convertKelvinToFahrenheit(weatherData.list[0].main.temp).toInt()
-                    .toString() + "°F"
+                }
 
-            }
+                temp == "celsius" -> {
+                    tvDegree.text = convertKelvinToCelsius(weatherData.list[0].main.temp).toInt()
+                        .toString() + "°C"
+                    tvTemp.text = convertKelvinToCelsius(weatherData.list[0].main.temp).toInt()
+                        .toString() + "°C"
+                }
 
-            temp == "celsius" -> {
-                tvDegree.text = convertKelvinToCelsius(weatherData.list[0].main.temp).toInt()
-                    .toString() + "°C"
-                tvTemp.text = convertKelvinToCelsius(weatherData.list[0].main.temp).toInt()
-                    .toString() + "°C"
-            }
+                else -> {
+                    tvDegree.text = weatherData.list[0].main.temp.toString() + "°K"
+                    tvTemp.text = weatherData.list[0].main.temp.toString() + "°K"
 
-            else -> {
-                tvDegree.text = weatherData.list[0].main.temp.toString() + "°K"
-                tvTemp.text = weatherData.list[0].main.temp.toString() + "°K"
+                }
 
             }
-
         }
     }
 
