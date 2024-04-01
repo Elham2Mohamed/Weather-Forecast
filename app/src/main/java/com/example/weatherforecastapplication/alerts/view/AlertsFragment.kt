@@ -60,6 +60,7 @@ import com.example.weatherforecastapplication.settings.viewModel.SettingsViewMod
 import com.example.weatherforecastapplication.settings.viewModel.SettingsViewModelFactory
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -169,7 +170,11 @@ class AlertsFragment : Fragment(), AlertOnClickListener {
             rgNotification.setOnCheckedChangeListener { _, checkedId ->
                 when (checkedId) {
                     R.id.rBtnNotifications -> {
+                        runBlocking {
+                            showEnableDialog()
+                        }
                         if (!Settings.canDrawOverlays(requireContext())) {
+
                             val intent = Intent(
                                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                                 Uri.parse("package: com.example.weatherforecastapplication.alerts.view")
@@ -178,10 +183,11 @@ class AlertsFragment : Fragment(), AlertOnClickListener {
                         }
 
                         type = "Alert"
-             }
+                    }
 
                     R.id.rBtn2Notifications -> {
                         val alert = date?.let {
+
                             val notificationManager = requireContext().getSystemService(
                                 NotificationManager::class.java
                             ) as NotificationManager
@@ -208,6 +214,7 @@ class AlertsFragment : Fragment(), AlertOnClickListener {
 
 
             btnSave.setOnClickListener {
+
                 Log.i("TAG", "onViewCreated: date=$date")
 
                 val alert = date?.let {
@@ -224,7 +231,7 @@ class AlertsFragment : Fragment(), AlertOnClickListener {
                 alert?.let {
                     viewModel.insertAlertWeather(it)
                     Log.i("TAG", "onViewCreated: alert before send $alert")
-                    id= alert.id
+                    id = alert.id
                 }
 
                 val request = date?.let { getInitialDelayForFutureDate(it) }?.let {
@@ -256,56 +263,41 @@ class AlertsFragment : Fragment(), AlertOnClickListener {
                         .observe(viewLifecycleOwner) { workInfo ->
                             when (workInfo.state) {
                                 WorkInfo.State.SUCCEEDED -> {
-                                    // Retrieve output data from the Worker
+
                                     val outputData = workInfo.outputData
                                     val city = outputData.getString("city")
                                     val date = outputData.getString("date")
                                     val lat = outputData.getDouble("lat", 0.0)
                                     val lon = outputData.getDouble("lon", 0.0)
                                     val type = outputData.getString("type")
-                                    val id = outputData.getInt("id",0)
+                                    val id = outputData.getInt("id", 0)
                                     Log.i("TAG", "onViewCreated:  id = $id")
                                     val alertWeather = AlertWeather(
-                                        id=id,
-                                      city=city.toString(),
-                                       date= date.toString(),
-                                       lat =  lat,
-                                       lon =  lon,
-                                       type =  type.toString()
+                                        id = id,
+                                        city = city.toString(),
+                                        date = date.toString(),
+                                        lat = lat,
+                                        lon = lon,
+                                        type = type.toString()
                                     )
-                                    Log.i("TAG", "onViewCreated:  before delete alertWeather = $alertWeather")
+                                    Log.i(
+                                        "TAG",
+                                        "onViewCreated:  before delete alertWeather = $alertWeather"
+                                    )
 
-                                    viewModel.alerts.observe(viewLifecycleOwner) {alerts->
-                                        alerts.forEach{
-                                            if(it.date == date){
+                                    viewModel.alerts.observe(viewLifecycleOwner) { alerts ->
+                                        alerts.forEach {
+                                            if (it.date == date) {
                                                 Log.i("TAG", "onViewCreated: by id alert  = $it")
                                                 viewModel.deleteAlertWeather(it)
 
                                             }
-                                        }}
+                                        }
+                                    }
                                 }
 
                                 WorkInfo.State.FAILED -> {
-                                    if (sViewModel.getNotificationAccess() == "enable")
 
-                                        showInternetConnectionDialog()
-                                    else {
-                                        val dialog = Dialog(requireContext())
-                                        dialog.setContentView(R.layout.notification_daialog)
-                                        val btnCancel = dialog.findViewById<Button>(R.id.btnCancel)
-                                        val btnEnable = dialog.findViewById<Button>(R.id.btnEnable)
-                                        btnCancel.setOnClickListener {
-                                            dialog.dismiss()
-                                        }
-
-                                        btnEnable.setOnClickListener {
-                                           sViewModel.setNotificationAccess("enable")
-                                            dialog.dismiss()
-                                        }
-                                        dialog.window?.setBackgroundDrawable(ColorDrawable(0))
-                                        dialog.show()
-
-                                    }
                                     Log.e("TAG", "Work failed")
                                 }
 
@@ -425,4 +417,26 @@ class AlertsFragment : Fragment(), AlertOnClickListener {
         return dateTime.time
     }
 
+    fun showEnableDialog() {
+        if (sViewModel.getNotificationAccess() == "enable")
+
+            showInternetConnectionDialog()
+        else {
+            val dialog = Dialog(requireContext())
+            dialog.setContentView(R.layout.notification_daialog)
+            val btnCancel = dialog.findViewById<Button>(R.id.btnCancel)
+            val btnEnable = dialog.findViewById<Button>(R.id.btnEnable)
+            btnCancel.setOnClickListener {
+                dialog.dismiss()
+            }
+
+            btnEnable.setOnClickListener {
+                sViewModel.setNotificationAccess("enable")
+                dialog.dismiss()
+            }
+            dialog.window?.setBackgroundDrawable(ColorDrawable(0))
+            dialog.show()
+
+        }
+    }
 }
