@@ -23,8 +23,8 @@ import org.junit.runner.RunWith
 class AlertsViewModelTest {
 
 
-    @get:Rule
-    val myRule = InstantTaskExecutorRule()
+//    @get:Rule
+//    val myRule = InstantTaskExecutorRule()
 
     @get:Rule
     val myMainCoroutinRule = MainCoroutinRule()
